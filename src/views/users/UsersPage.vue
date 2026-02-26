@@ -20,18 +20,20 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden">
-      <el-table :data="filteredUsers" stripe>
-        <el-table-column prop="username" label="用户名" width="120" />
-        <el-table-column prop="email" label="邮箱" min-width="180" />
-        <el-table-column prop="company" label="公司" width="100" />
-        <el-table-column prop="role" label="角色" width="100" />
-        <el-table-column prop="registerTime" label="注册时间" width="160" />
-        <el-table-column label="操作" width="100" fixed="right">
-          <template #default>
-            <el-button type="primary" link size="small">切换账号</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="responsive-table-container">
+        <el-table :data="filteredUsers" stripe class="mobile-table-dense mobile-action-buttons">
+          <el-table-column prop="username" label="用户名" width="120" />
+          <el-table-column prop="email" label="邮箱" min-width="180" />
+          <el-table-column prop="company" label="公司" width="100" />
+          <el-table-column prop="role" label="角色" width="100" />
+          <el-table-column prop="registerTime" label="注册时间" width="160" />
+          <el-table-column label="操作" width="100" fixed="right">
+            <template #default>
+              <el-button type="primary" link size="small">切换账号</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </div>
   </div>
 </template>

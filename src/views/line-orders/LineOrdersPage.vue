@@ -64,8 +64,8 @@
 
     <!-- 表格：横向可滚动，占满宽度 -->
     <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden w-full">
-      <div class="overflow-x-auto">
-        <el-table :data="paginatedList" stripe style="width: 100%; min-width: 1400px" max-height="500">
+      <div class="responsive-table-container">
+        <el-table :data="paginatedList" stripe style="width: 100%; min-width: 1400px" max-height="500" class="mobile-table-dense mobile-action-buttons">
           <el-table-column type="selection" width="40" />
           <el-table-column prop="orderNo" label="订单号" min-width="100" />
           <el-table-column prop="referenceNo" label="参考号" min-width="80" />

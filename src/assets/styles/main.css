@@ -39,6 +39,40 @@ body {
   @apply bg-white rounded-2xl border border-slate-200/80 shadow-soft;
 }
 
+/* 响应式表格容器 */
+.responsive-table-container {
+  @apply overflow-x-auto;
+}
+
+.responsive-table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.responsive-table-container::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
+
+.responsive-table-container::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded hover:bg-gray-400;
+}
+
+/* 移动端表格优化 */
+@media (max-width: 768px) {
+  .mobile-table-dense {
+    --el-table-font-size: 12px;
+  }
+  
+  .mobile-table-dense .el-table__cell {
+    padding: 8px 0;
+  }
+  
+  /* 表格操作按钮紧凑显示 */
+  .mobile-action-buttons .el-button--small {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
 /* 深色内容区内的表格 */
 .bg-content-dark .el-table {
   --el-table-bg-color: rgba(30, 41, 59, 0.5);

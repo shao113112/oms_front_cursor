@@ -53,7 +53,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">保存</el-button>
+        <el-button type="primary" @click="submitForm" :loading="saving">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -62,6 +62,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { pickupAddressesList, addPickupAddress, updatePickupAddress, deletePickupAddress } from '@/mock/pickupAddresses'
+import { useOperationFeedback } from '@/composables/useOperationFeedback'
 
 const list = ref([])
 
@@ -80,6 +81,16 @@ const form = reactive({
   isDefault: false,
 })
 
+// 使用操作反馈
+const { 
+  withLoading, 
+  withDeleteConfirm, 
+  withSaveOperation,
+  showError 
+} = useOperationFeedback()
+
+const saving = ref(false)
+
 function openEdit(row) {
   editingId.value = row.id
   form.name = row.name || ''
@@ -90,6 +101,7 @@ function openEdit(row) {
   form.isDefault = !!row.isDefault
   dialogVisible.value = true
 }
+
 function resetForm() {
   editingId.value = ''
   form.name = ''
@@ -99,19 +111,39 @@ function resetForm() {
   form.remark = ''
   form.isDefault = false
 }
-function submitForm() {
-  if (editingId.value) {
-    updatePickupAddress(editingId.value, { ...form })
-    const idx = list.value.findIndex((a) => a.id === editingId.value)
-    if (idx !== -1) Object.assign(list.value[idx], { ...form, isDefault: form.isDefault })
-  } else {
-    addPickupAddress({ ...form })
-    list.value = [...pickupAddressesList]
+
+async function submitForm() {
+  saving.value = true
+  try {
+    const action = editingId.value 
+      ? () => updatePickupAddress(editingId.value, { ...form })
+      : () => addPickupAddress({ ...form })
+    
+    await withSaveOperation(action, '提货地址')
+    
+    if (editingId.value) {
+      const idx = list.value.findIndex((a) => a.id === editingId.value)
+      if (idx !== -1) Object.assign(list.value[idx], { ...form, isDefault: form.isDefault })
+    } else {
+      list.value = [...pickupAddressesList]
+    }
+    dialogVisible.value = false
+  } finally {
+    saving.value = false
   }
-  dialogVisible.value = false
 }
-function handleDelete(id) {
-  deletePickupAddress(id)
-  list.value = list.value.filter((a) => a.id !== id)
+
+async function handleDelete(id) {
+  const address = list.value.find(item => item.id === id)
+  if (address) {
+    await withDeleteConfirm(address.name || '该地址', async () => {
+      const result = deletePickupAddress(id)
+      if (result.success) {
+        list.value = list.value.filter((a) => a.id !== id)
+      } else {
+        showError(result.message)
+      }
+    })
+  }
 }
 </script>
