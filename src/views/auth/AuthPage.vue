@@ -41,6 +41,7 @@
       </div>
 
       <!-- 登录表单 -->
+      <p v-if="activeTab === 'login' && registerSuccessTip" class="mt-4 text-sm text-green-600">{{ registerSuccessTip }}</p>
       <form v-show="activeTab === 'login'" class="mt-6 space-y-4" @submit.prevent="handleLogin">
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">邮箱</label>
@@ -149,15 +150,17 @@
 import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useFormValidation } from '@/composables/useFormValidation'
+import { login as apiLogin, register as apiRegister } from '@/api/auth'
 
 const router = useRouter()
 const route = useRoute()
 const activeTab = ref('login')
+const registerSuccessTip = ref('')
 
 // 表单数据
 const loginForm = reactive({
-  email: 'opr@dotmatrix.com',
-  password: 'operator',
+  email: '',
+  password: '',
 })
 
 const registerForm = reactive({
@@ -168,44 +171,64 @@ const registerForm = reactive({
 })
 
 // 使用表单验证
-const { 
-  errors, 
-  isSubmitting, 
-  validateLoginForm, 
-  validateRegisterForm, 
-  getError, 
+const {
+  errors,
+  isSubmitting,
+  validateLoginForm,
+  validateRegisterForm,
+  getError,
   hasError,
-  clearErrors 
+  clearErrors,
+  setError,
 } = useFormValidation()
 
-function handleLogin() {
+// 通用错误展示（无字段时用 email 占位显示）
+function showApiError(message, field = 'email') {
+  clearErrors()
+  setError(field, message || '请求失败，请重试')
+}
+
+async function handleLogin() {
   if (!validateLoginForm(loginForm)) return
-  
   isSubmitting.value = true
-  // 模拟API调用延迟
-  setTimeout(() => {
-    localStorage.setItem('oms_token', 'mock')
+  clearErrors()
+  try {
+    await apiLogin({ email: loginForm.email, password: loginForm.password })
     const redirect = route.query.redirect || '/'
     router.push(redirect)
+  } catch (e) {
+    showApiError(e.message || '登录失败', 'password')
+  } finally {
     isSubmitting.value = false
-  }, 800)
+  }
 }
 
-function handleRegister() {
+async function handleRegister() {
   if (!validateRegisterForm(registerForm)) return
-  
   isSubmitting.value = true
-  // 模拟API调用延迟
-  setTimeout(() => {
-    localStorage.setItem('oms_token', 'mock')
-    router.push(route.query.redirect || '/')
+  clearErrors()
+  try {
+    await apiRegister({
+      name: registerForm.name,
+      company: registerForm.company,
+      email: registerForm.email,
+      password: registerForm.password,
+    })
+    clearErrors()
+    loginForm.email = registerForm.email
+    loginForm.password = ''
+    registerSuccessTip.value = '注册成功，请登录'
+    activeTab.value = 'login'
+  } catch (e) {
+    showApiError(e.message || '注册失败')
+  } finally {
     isSubmitting.value = false
-  }, 800)
+  }
 }
 
-// 切换tab时清除错误
 function switchTab(tab) {
   activeTab.value = tab
+  if (tab === 'register') registerSuccessTip.value = ''
   clearErrors()
 }
 </script>
