@@ -1,15 +1,12 @@
 <template>
-  <div class="bg-content-dark min-h-[calc(100vh-8rem)] -mx-4 -my-6 px-4 py-6 md:-mx-6 md:px-6 md:py-6 rounded-lg">
+  <div class="w-full min-w-0">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <h1 class="text-xl font-bold text-white">收件信息管理</h1>
+      <h1 class="text-xl font-bold text-gray-800">收件信息管理</h1>
       <el-button type="primary" @click="openDialog">+ 新增收件信息</el-button>
     </div>
 
-    <div v-if="list.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-500">
-      <p class="text-sm">暂无收件信息，点击上方按钮添加</p>
-    </div>
-    <div v-else class="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden">
-      <el-table :data="list">
+    <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden">
+      <el-table :data="list" stripe v-loading="loading">
         <el-table-column prop="recipient" label="收件人" width="140" />
         <el-table-column prop="contact" label="联系方式" width="160" />
         <el-table-column prop="address" label="详细地址" min-width="220" show-overflow-tooltip />
@@ -22,14 +19,13 @@
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openEdit(row)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row.id)">删除</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <el-dialog v-model="dialogVisible" title="新增收件信息" width="500px" destroy-on-close @close="resetForm">
-      <p class="text-gray-500 text-sm mb-4">请填写收件人的详细信息</p>
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑收件信息' : '新增收件信息'" width="500px" destroy-on-close @close="resetForm">
       <el-form :model="form" label-width="100px">
         <el-form-item label="收件人" required>
           <el-input v-model="form.recipient" placeholder="请输入收件人姓名" />
@@ -46,7 +42,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">保存</el-button>
+        <el-button type="primary" @click="submitForm" :loading="saving">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -54,13 +50,39 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { shippingAddressesList, addShippingAddress, updateShippingAddress, deleteShippingAddress } from '@/mock/shippingAddresses'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  searchReceiveAddresses,
+  createReceiveAddress,
+  updateReceiveAddress,
+  deleteReceiveAddress,
+} from '@/api/receiveAddresses'
 
 const list = ref([])
+const loading = ref(false)
+const saving = ref(false)
 
-onMounted(() => {
-  list.value = [...shippingAddressesList]
-})
+function mapItem(row) {
+  return {
+    ...row,
+    recipient: row.name ?? row.recipient,
+    contact: row.phone ?? row.contact,
+  }
+}
+
+async function fetchList() {
+  loading.value = true
+  try {
+    const res = await searchReceiveAddresses({ page: 1, size: 500 })
+    list.value = (res.items || []).map(mapItem)
+  } catch (e) {
+    ElMessage.error(e.message || '加载失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => fetchList())
 
 const dialogVisible = ref(false)
 const editingId = ref('')
@@ -76,14 +98,16 @@ function openDialog() {
   resetForm()
   dialogVisible.value = true
 }
+
 function openEdit(row) {
   editingId.value = row.id
-  form.recipient = row.recipient
-  form.contact = row.contact
-  form.address = row.address
+  form.recipient = row.recipient ?? row.name ?? ''
+  form.contact = row.contact ?? row.phone ?? ''
+  form.address = row.address ?? ''
   form.isDefault = !!row.isDefault
   dialogVisible.value = true
 }
+
 function resetForm() {
   editingId.value = ''
   form.recipient = ''
@@ -91,19 +115,62 @@ function resetForm() {
   form.address = ''
   form.isDefault = false
 }
-function submitForm() {
-  if (editingId.value) {
-    updateShippingAddress(editingId.value, { ...form })
-    const idx = list.value.findIndex((a) => a.id === editingId.value)
-    if (idx !== -1) Object.assign(list.value[idx], { ...form, isDefault: form.isDefault })
-  } else {
-    addShippingAddress({ ...form })
-    list.value = [...shippingAddressesList]
+
+async function submitForm() {
+  saving.value = true
+  try {
+    if (editingId.value) {
+      await updateReceiveAddress({
+        id: editingId.value,
+        recipient: form.recipient,
+        contact: form.contact,
+        address: form.address,
+        isDefault: form.isDefault,
+      })
+      const idx = list.value.findIndex((a) => a.id === editingId.value)
+      if (idx !== -1) {
+        list.value[idx] = mapItem({
+          ...list.value[idx],
+          name: form.recipient,
+          phone: form.contact,
+          address: form.address,
+          isDefault: form.isDefault,
+        })
+      }
+    } else {
+      await createReceiveAddress({
+        recipient: form.recipient,
+        contact: form.contact,
+        address: form.address,
+        isDefault: form.isDefault,
+      })
+    }
+    await fetchList()
+    ElMessage.success('保存成功')
+    dialogVisible.value = false
+  } catch (e) {
+    ElMessage.error(e.message || '保存失败')
+  } finally {
+    saving.value = false
   }
-  dialogVisible.value = false
 }
-function handleDelete(id) {
-  deleteShippingAddress(id)
-  list.value = list.value.filter((a) => a.id !== id)
+
+async function handleDelete(row) {
+  const id = typeof row === 'object' ? row.id : row
+  try {
+    await ElMessageBox.confirm('确定删除该收件信息吗？', '删除确认', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      center: true,
+      appendTo: document.body,
+      customClass: 'oms-message-box',
+    })
+    await deleteReceiveAddress(id)
+    list.value = list.value.filter((a) => a.id !== id)
+    ElMessage.success('删除成功')
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+  }
 }
 </script>

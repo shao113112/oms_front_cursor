@@ -99,6 +99,52 @@ body {
   --el-button-hover-border-color: #4F46E5;
 }
 
+/* 删除确认等 MessageBox：视口居中 + 浅色遮罩 + 白卡片 */
+.el-overlay.is-message-box {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px;
+  z-index: 2000;
+  background-color: rgba(15, 23, 42, 0.25) !important;
+  backdrop-filter: blur(4px);
+}
+.el-overlay.is-message-box .el-overlay-message-box {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0;
+  margin: 0;
+}
+.el-overlay.is-message-box .el-overlay-message-box::after {
+  display: none !important;
+}
+.oms-message-box {
+  background-color: #fff !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  border-radius: var(--oms-card-radius, 16px) !important;
+  box-shadow: var(--oms-shadow-soft), 0 25px 50px -12px rgb(0 0 0 / 0.12) !important;
+  padding: 20px !important;
+  margin: 0 !important;
+}
+.oms-message-box .el-message-box__header {
+  padding-bottom: 12px;
+}
+.oms-message-box .el-message-box__title {
+  color: #1e293b;
+  font-weight: 600;
+}
+.oms-message-box .el-message-box__content {
+  padding: 8px 0 16px;
+  color: #475569;
+}
+.oms-message-box .el-message-box__btns {
+  padding-top: 0;
+}
+
 .el-input__wrapper {
   border-radius: 10px;
 }

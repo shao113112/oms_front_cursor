@@ -35,14 +35,19 @@ export function useOperationFeedback() {
     ElMessage.info(message)
   }
 
-  // 确认对话框
+  // 删除/确认对话框：挂载到 body 并居中，样式与页面统一
+  const messageBoxOptions = {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    center: true,
+    appendTo: document.body,
+    customClass: 'oms-message-box',
+  }
+
   const confirmAction = async (message, title = '确认操作') => {
     try {
-      await ElMessageBox.confirm(message, title, {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
+      await ElMessageBox.confirm(message, title, messageBoxOptions)
       return true
     } catch {
       return false
@@ -90,6 +95,7 @@ export function useOperationFeedback() {
     confirmAction,
     withLoading,
     withDeleteConfirm,
-    withSaveOperation
+    withSaveOperation,
+    messageBoxOptions,
   }
 }
