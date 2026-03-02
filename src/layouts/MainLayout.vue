@@ -1,10 +1,10 @@
 <template>
   <div class="min-h-screen flex flex-col bg-surface">
     <header class="flex-shrink-0 bg-header text-white shadow-soft">
-      <div class="max-w-full mx-auto px-4 h-14 flex items-center justify-between">
-        <div class="flex items-center gap-6">
+      <div class="max-w-full mx-auto px-4 h-14 flex items-center justify-between relative">
+        <div class="flex items-center gap-6 shrink-0">
           <!-- Logo：浅蓝图标 + EpochV OMS -->
-          <router-link to="/" class="flex items-center gap-2 shrink-0">
+          <router-link to="/" class="flex items-center gap-2">
             <svg class="w-8 h-8 text-primary-light" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
@@ -18,7 +18,8 @@
           >
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
           </button>
-          <nav class="hidden md:flex items-center gap-0.5">
+        </div>
+        <nav class="hidden md:flex items-center justify-center gap-0.5 absolute left-1/2 top-0 bottom-0 -translate-x-1/2">
             <router-link
               to="/"
               class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] hover:bg-white/10"
@@ -45,24 +46,24 @@
             </router-link>
             <el-dropdown trigger="click" class="ml-0.5" @command="handleSettingCommand">
               <span
-                class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] cursor-pointer hover:bg-white/10"
+                class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] cursor-pointer hover:bg-white/10 text-white"
+                :class="isActive('/users') || isActive('/logistics-products') || isActive('/pricing-rules') || isActive('/shipping-addresses') || isActive('/pickup-addresses') ? 'bg-white/10' : ''"
               >
-                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span class="text-sm flex items-center gap-0.5">系统设置 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></span>
+                <svg class="w-5 h-5 mb-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="text-sm inline-flex items-center gap-0.5">系统设置 <svg class="w-3.5 h-3.5 inline opacity-90" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></span>
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="pickup-addresses">提货地址</el-dropdown-item>
-                  <el-dropdown-item command="shipping-addresses">收件信息</el-dropdown-item>
-                  <el-dropdown-item command="logistics-products">物流产品</el-dropdown-item>
-                  <el-dropdown-item command="pricing-rules">定价规则</el-dropdown-item>
                   <el-dropdown-item command="users">用户管理</el-dropdown-item>
+                  <el-dropdown-item command="logistics-products">物流产品</el-dropdown-item>
+                  <el-dropdown-item command="pricing-rules">通用报价</el-dropdown-item>
+                  <el-dropdown-item command="shipping-addresses">收件信息</el-dropdown-item>
+                  <el-dropdown-item command="pickup-addresses">提货地址</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
           </nav>
-        </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 shrink-0">
           <span class="text-sm">operator</span>
           <button type="button" class="text-sm flex items-center gap-1 hover:opacity-90" @click="logout">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>

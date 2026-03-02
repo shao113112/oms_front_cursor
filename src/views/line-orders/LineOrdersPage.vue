@@ -10,38 +10,60 @@
       </router-link>
     </div>
 
-    <!-- 搜索与筛选 -->
+    <!-- 搜索与筛选：按 订单号、创建时间、创建人、物流产品、货物属性 排列，标签在控件左上角 -->
     <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-4 mb-6">
-      <el-input
-        v-model="searchKeyword"
-        placeholder="搜索订单号..."
-        class="mb-4 max-w-md"
-        clearable
-      />
-      <div class="flex flex-wrap gap-3 mb-4">
-        <el-select v-model="filters.logisticsProductId" placeholder="物流产品" clearable filterable style="width: 180px">
-          <el-option label="全部" value="" />
-          <el-option v-for="p in logisticsProducts" :key="p.id" :label="p.name || p.productName" :value="p.id" />
-        </el-select>
-        <el-select v-model="filters.cargoType" placeholder="货物属性" clearable style="width: 120px">
-          <el-option label="全部" value="" />
-          <el-option label="普货" value="普货" />
-        </el-select>
-        <el-date-picker v-model="filters.createTime" type="daterange" range-separator="至" start-placeholder="创建时间" end-placeholder="结束" value-format="YYYY-MM-DD" style="width: 240px" />
-        <el-input v-model="filters.creator" placeholder="创建人" clearable style="width: 120px" />
+      <div class="flex flex-wrap items-end gap-3 mb-4">
+        <div class="filter-field">
+          <span class="filter-field__label">订单号</span>
+          <el-input v-model="searchKeyword" clearable style="width: 160px" />
+        </div>
+        <div class="filter-field">
+          <span class="filter-field__label">创建时间</span>
+          <div class="flex items-center gap-1">
+            <el-date-picker
+              v-model="filters.createTimeStart"
+              type="date"
+              value-format="YYYY-MM-DD"
+              class="line-order-date-start"
+            />
+            <span class="text-slate-400 text-xs">至</span>
+            <el-date-picker
+              v-model="filters.createTimeEnd"
+              type="date"
+              value-format="YYYY-MM-DD"
+              class="line-order-date-end"
+            />
+          </div>
+        </div>
+        <div class="filter-field">
+          <span class="filter-field__label">创建人</span>
+          <el-input v-model="filters.creator" clearable style="width: 100px" />
+        </div>
+        <div class="filter-field">
+          <span class="filter-field__label">物流产品</span>
+          <el-select v-model="filters.logisticsProductId" clearable filterable style="width: 160px">
+            <el-option label="全部" value="" />
+            <el-option v-for="p in logisticsProducts" :key="p.id" :label="p.name || p.productName" :value="p.id" />
+          </el-select>
+        </div>
+        <div class="filter-field">
+          <span class="filter-field__label">货物属性</span>
+          <el-select v-model="filters.cargoType" clearable style="width: 100px">
+            <el-option label="全部" value="" />
+            <el-option label="普货" value="普货" />
+            <el-option label="特货" value="特货" />
+          </el-select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作栏：搜索/重置 左侧，复制等 右侧 -->
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <div class="flex items-center gap-2">
         <el-button type="primary" @click="doSearch">搜索</el-button>
         <el-button @click="resetSearch">重置</el-button>
       </div>
-      <!-- 状态 Tab -->
-      <el-tabs v-model="activeStatus" class="mb-4">
-        <el-tab-pane label="全部" name="all" />
-        <el-tab-pane label="待处理" name="PENDING" />
-        <el-tab-pane label="运输中" name="TRANSPORTING" />
-        <el-tab-pane label="已送达" name="DELIVERED" />
-        <el-tab-pane label="草稿" name="DRAFT" />
-      </el-tabs>
-      <!-- 批量操作 -->
-      <div class="flex flex-wrap gap-2 mb-4">
+      <div class="flex flex-wrap items-center gap-2">
         <el-button size="small">复制</el-button>
         <el-button size="small">重新计费</el-button>
         <el-button size="small">打印箱唛</el-button>
@@ -56,6 +78,17 @@
         </el-dropdown>
         <el-button size="small">列设置</el-button>
       </div>
+    </div>
+
+    <!-- 订单状态 Tab：在搜索重置下方、分页区上方 -->
+    <div class="mb-4">
+      <el-tabs v-model="activeStatus" class="line-order-status-tabs">
+        <el-tab-pane label="全部" name="all" />
+        <el-tab-pane label="待处理" name="PENDING" />
+        <el-tab-pane label="运输中" name="TRANSPORTING" />
+        <el-tab-pane label="已送达" name="DELIVERED" />
+        <el-tab-pane label="草稿" name="DRAFT" />
+      </el-tabs>
     </div>
 
     <!-- 表格：横向可滚动，占满宽度 -->
@@ -116,17 +149,17 @@
           </el-table-column>
         </el-table>
       </div>
-      <!-- 分页栏 -->
+      <!-- 分页区：每页条数 + 分页 -->
       <div class="w-full px-4 py-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
-        <div class="flex items-center gap-2">
-          <span class="text-gray-500">每页显示</span>
-          <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1; fetchList()">
-            <el-option label="20条" :value="20" />
-            <el-option label="50条" :value="50" />
-            <el-option label="100条" :value="100" />
-          </el-select>
-        </div>
-        <el-pagination
+          <div class="flex items-center gap-2">
+            <span class="text-gray-500">每页显示</span>
+            <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1; fetchList()">
+              <el-option label="20条" :value="20" />
+              <el-option label="50条" :value="50" />
+              <el-option label="100条" :value="100" />
+            </el-select>
+          </div>
+          <el-pagination
           v-model:current-page="currentPage"
           layout="prev, pager, next"
           :total="total"
@@ -157,7 +190,8 @@ const logisticsProducts = ref([])
 const filters = reactive({
   logisticsProductId: '',
   cargoType: '',
-  createTime: null,
+  createTimeStart: '',
+  createTimeEnd: '',
   creator: '',
 })
 
@@ -200,7 +234,7 @@ async function fetchList() {
       size: pageSize.value,
       orderNo: searchKeyword.value.trim() || undefined,
       orderStatus: activeStatus.value === 'all' ? undefined : activeStatus.value,
-      createTime: filters.createTime,
+      createTime: (filters.createTimeStart || filters.createTimeEnd) ? [filters.createTimeStart || null, filters.createTimeEnd || null] : undefined,
       creator: filters.creator || undefined,
       logisticsProductId: filters.logisticsProductId || undefined,
       cargoType: filters.cargoType || undefined,
@@ -230,7 +264,8 @@ function resetSearch() {
   searchKeyword.value = ''
   filters.logisticsProductId = ''
   filters.cargoType = ''
-  filters.createTime = null
+  filters.createTimeStart = ''
+  filters.createTimeEnd = ''
   filters.creator = ''
   activeStatus.value = 'all'
   currentPage.value = 1
@@ -244,3 +279,37 @@ onMounted(() => {
   fetchList()
 })
 </script>
+
+<style scoped>
+.filter-field {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.filter-field__label {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.2;
+  padding-left: 1px;
+}
+.line-order-status-tabs :deep(.el-tabs__header) {
+  margin-bottom: 0;
+}
+.line-order-status-tabs :deep(.el-tabs__nav-wrap::after) {
+  display: none;
+}
+/* 只保留 Tab 按钮，隐藏底部内容区，避免出现“两排”效果 */
+.line-order-status-tabs :deep(.el-tabs__content) {
+  display: none;
+}
+.line-order-date-start,
+.line-order-date-end {
+  width: 100px !important;
+}
+.line-order-date-start :deep(.el-input__wrapper),
+.line-order-date-end :deep(.el-input__wrapper) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+</style>
