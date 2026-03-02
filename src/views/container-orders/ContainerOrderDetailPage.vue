@@ -1,52 +1,56 @@
 <template>
-  <div v-if="order" class="w-full min-w-0">
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-      <router-link to="/container-orders" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 text-sm">
-        <span>←</span> 返回
-      </router-link>
-      <div class="flex items-center gap-3">
-        <h1 class="text-xl font-bold text-gray-800">订单详情</h1>
-        <span class="px-2 py-0.5 rounded text-sm bg-gray-100 text-gray-700">{{ order.status }}</span>
+  <div v-loading="loading" class="w-full min-w-0">
+    <div v-if="detail" class="space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <router-link to="/container-orders" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 text-sm">
+          <span>←</span> 返回
+        </router-link>
+        <div class="flex items-center gap-3">
+          <h1 class="text-xl font-bold text-gray-800">整柜订单详情</h1>
+          <span class="px-2 py-0.5 rounded text-sm bg-gray-100 text-gray-700">{{ orderStatusText[detail.order?.orderStatus] || detail.order?.orderStatus || '-' }}</span>
+        </div>
       </div>
-    </div>
 
-    <div class="space-y-6">
       <!-- 订单信息 -->
       <section class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
         <h2 class="text-base font-semibold text-gray-800 mb-4">订单信息</h2>
-        <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-          <p><span class="text-gray-500">订单号:</span> {{ order.orderNo }}</p>
-          <p><span class="text-gray-500">箱数:</span> {{ order.boxCount }}箱</p>
-          <p><span class="text-gray-500">运输方式:</span> {{ order.transportMethod }}</p>
-          <p><span class="text-gray-500">创建时间:</span> {{ order.createTime }}</p>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+          <div><span class="text-gray-500 block mb-0.5">订单号</span><div class="text-gray-800">{{ detail.order?.orderNo || '-' }}</div></div>
+          <div><span class="text-gray-500 block mb-0.5">运输方式</span><div class="text-gray-800">{{ detail.order?.transportMethod || '-' }}</div></div>
+          <div><span class="text-gray-500 block mb-0.5">箱数</span><div class="text-gray-800">{{ detail.order?.boxQty ?? '-' }} 箱</div></div>
+          <div><span class="text-gray-500 block mb-0.5">创建时间</span><div class="text-gray-800">{{ formatTime(detail.order?.createTime) }}</div></div>
+          <div class="col-span-2"><span class="text-gray-500 block mb-0.5">备注</span><div class="text-gray-800">{{ detail.order?.memo || '-' }}</div></div>
         </div>
       </section>
 
       <!-- 提货地址 -->
-      <section class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
+      <section class="address-block bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
         <h2 class="text-base font-semibold text-gray-800 mb-4">提货地址</h2>
-        <div class="text-sm text-gray-600 space-y-1">
-          <p>联系人: {{ order.pickupContact || '-' }}</p>
-          <p>联系电话: {{ order.pickupPhone || '-' }}</p>
-          <p>详细地址: {{ order.pickupAddressDetail || '-' }}</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <p><span class="text-gray-500">联系人:</span> {{ detail.order?.pickupContactName ?? '-' }}</p>
+          <p><span class="text-gray-500">联系电话:</span> {{ detail.order?.pickupPhone ?? '-' }}</p>
+          <p><span class="text-gray-500">详细地址:</span> {{ detail.order?.pickupAddress ?? '-' }}</p>
         </div>
       </section>
 
       <!-- 收件地址 -->
-      <section class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
+      <section class="address-block bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
         <h2 class="text-base font-semibold text-gray-800 mb-4">收件地址</h2>
-        <div class="text-sm text-gray-600 space-y-1">
-          <p>收件人: {{ order.recipientName || '-' }}</p>
-          <p>联系电话: {{ order.recipientPhone || '-' }}</p>
-          <p>详细地址: {{ order.recipientAddressDetail || '-' }}</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <p><span class="text-gray-500">联系人:</span> {{ detail.order?.receiveContactName ?? '-' }}</p>
+          <p><span class="text-gray-500">联系电话:</span> {{ detail.order?.receivePhone ?? '-' }}</p>
+          <p><span class="text-gray-500">详细地址:</span> {{ detail.order?.receiveAddress ?? detail.order?.shippingAddress ?? '-' }}</p>
         </div>
       </section>
 
       <!-- 申报信息 -->
       <section class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
         <h2 class="text-base font-semibold text-gray-800 mb-4">申报信息</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm min-w-[700px]">
+        <div v-if="!detail.goods || detail.goods.length === 0" class="py-8 text-center text-gray-400">
+          暂无申报商品
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[900px]">
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-4 py-2 text-left font-medium text-gray-700">商品名称</th>
@@ -62,44 +66,94 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-              <tr v-for="(item, i) in order.declarationItems" :key="i">
-                <td class="px-4 py-2">{{ item.productName }}</td>
-                <td class="px-4 py-2">{{ item.englishName || '-' }}</td>
+              <tr v-for="(item, i) in detail.goods" :key="item.id || i">
+                <td class="px-4 py-2">{{ item.goodsName || '-' }}</td>
+                <td class="px-4 py-2">{{ item.goodsEnglishName || '-' }}</td>
                 <td class="px-4 py-2">{{ item.brand || '-' }}</td>
-                <td class="px-4 py-2">CNY {{ item.declaredPrice }}</td>
-                <td class="px-4 py-2">{{ item.quantity }}{{ item.unit || '件' }}</td>
-                <td class="px-4 py-2">{{ item.boxCount }}</td>
-                <td class="px-4 py-2">CNY {{ item.totalPrice }}</td>
+                <td class="px-4 py-2">{{ item.declaredPrice != null ? item.declaredPrice : '-' }}</td>
+                <td class="px-4 py-2">{{ item.quantity ?? '-' }}</td>
+                <td class="px-4 py-2">{{ item.boxCount ?? '-' }}</td>
+                <td class="px-4 py-2">{{ rowTotal(item) }}</td>
                 <td class="px-4 py-2">{{ item.material || '-' }}</td>
-                <td class="px-4 py-2">{{ item.specification || '-' }}</td>
+                <td class="px-4 py-2">{{ item.spec || '-' }}</td>
                 <td class="px-4 py-2">{{ item.purpose || '-' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="mt-4 flex gap-6 text-sm text-gray-600">
-          <span>总件数: {{ order.totalPieces }}</span>
-          <span>总箱数: {{ order.totalBoxes }}</span>
-          <span>申报总货值(CNY): {{ order.totalDeclaredValue }}</span>
+          <span>总件数: {{ totalPieces }}</span>
+          <span>总箱数: {{ detail.order?.boxQty ?? 0 }}</span>
+          <span>申报总货值: {{ totalDeclaredValue }}</span>
         </div>
       </section>
     </div>
-  </div>
-  <div v-else class="py-12 text-center text-gray-500">
-    订单不存在
-    <router-link to="/container-orders" class="text-primary ml-2">返回列表</router-link>
+    <div v-else-if="!loading" class="py-12 text-center text-gray-500">
+      订单不存在
+      <router-link to="/container-orders" class="text-primary ml-2">返回列表</router-link>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getContainerOrderDetail } from '@/mock/containerOrders'
+import { ElMessage } from 'element-plus'
+import { getContainerOrderDetail } from '@/api/containerOrders'
+
+const orderStatusText = { DRAFT: '草稿', PENDING: '待处理', TRANSPORTING: '运输中', DELIVERED: '已送达', CANCELLED: '已取消' }
 
 const route = useRoute()
-const order = ref(null)
+const loading = ref(true)
+const detail = ref(null)
 
-onMounted(() => {
-  order.value = getContainerOrderDetail(route.params.id)
+const totalPieces = computed(() => {
+  const goods = detail.value?.goods
+  if (!goods?.length) return 0
+  return goods.reduce((s, g) => s + (Number(g.quantity) || 0), 0)
+})
+
+const totalDeclaredValue = computed(() => {
+  const goods = detail.value?.goods
+  if (!goods?.length) return '0.00'
+  const sum = goods.reduce((s, g) => s + (Number(g.quantity) || 0) * (Number(g.declaredPrice) || 0), 0)
+  return sum.toFixed(2)
+})
+
+function formatTime(v) {
+  if (!v) return '-'
+  if (typeof v === 'string') return v
+  try {
+    return new Date(v).toLocaleString('zh-CN')
+  } catch {
+    return String(v)
+  }
+}
+
+function rowTotal(item) {
+  const q = Number(item?.quantity) || 0
+  const p = Number(item?.declaredPrice) || 0
+  if (!q && !p) return '-'
+  return (q * p).toFixed(2)
+}
+
+onMounted(async () => {
+  const id = route.params.id
+  if (!id) {
+    loading.value = false
+    return
+  }
+  try {
+    const data = await getContainerOrderDetail(id)
+    // 接口已做归一化，保证 { order, goods } 结构
+    detail.value = data && (data.order != null || (data.goods && data.goods.length > 0))
+      ? data
+      : null
+  } catch (e) {
+    ElMessage.error(e?.message || '加载失败')
+    detail.value = null
+  } finally {
+    loading.value = false
+  }
 })
 </script>
