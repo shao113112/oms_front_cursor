@@ -10,15 +10,14 @@
         <p class="text-sm text-gray-500 mt-0.5">步骤 {{ step }}/3 - {{ stepTitles[step - 1] }}</p>
       </div>
       <div class="flex flex-wrap gap-2 justify-end">
-        <el-button @click="saveDraft">
-          <svg class="w-4 h-4 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          暂存
+        <el-button @click="saveDraft" :loading="saving">
+          <span v-if="!saving"><svg class="w-4 h-4 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>暂存</span>
         </el-button>
         <el-button v-if="step > 1" @click="step--">上一步</el-button>
         <el-button v-if="step < 3" type="primary" @click="nextStep">下一步</el-button>
         <template v-else>
           <el-button @click="saveDraft">保存草稿</el-button>
-          <el-button type="primary" @click="finishCreate">完成创建</el-button>
+          <el-button type="primary" @click="finishCreate" :loading="saving">完成创建</el-button>
         </template>
       </div>
     </div>
@@ -44,13 +43,13 @@
               <el-option
                 v-for="r in shippingAddressesList"
                 :key="r.id"
-                :label="`已选择: ${r.recipient}`"
+                :label="`${r.name || r.recipient || '收件信息'} ${r.phone ? '(' + r.phone + ')' : ''}`"
                 :value="r.id"
               />
             </el-select>
             <template v-if="selectedRecipient">
-              <p class="text-xs text-gray-500 mt-1.5">收件人: {{ selectedRecipient.recipient }}</p>
-              <p class="text-xs text-gray-500">联系方式: {{ selectedRecipient.contact }}</p>
+              <p class="text-xs text-gray-500 mt-1.5">收件人: {{ selectedRecipient.name || selectedRecipient.recipient }}</p>
+              <p class="text-xs text-gray-500">联系方式: {{ selectedRecipient.phone || selectedRecipient.contact }}</p>
               <p class="text-xs text-gray-500">详细地址: {{ selectedRecipient.address }}</p>
             </template>
           </div>
@@ -70,10 +69,6 @@
             <el-select v-model="form.cargoType" placeholder="请选择货物属性" class="w-full">
               <el-option label="普货" value="普货" />
             </el-select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">参考号</label>
-            <el-input v-model="form.referenceNo" placeholder="" clearable />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">客户参考号 (可选)</label>
@@ -230,10 +225,9 @@
           :key="p.id"
           class="border border-slate-200 rounded-xl p-4 hover:border-primary hover:shadow-soft transition-all duration-200"
         >
-          <h3 class="font-semibold text-gray-800">{{ p.name }}</h3>
-          <p class="text-sm text-gray-500 mt-1">{{ p.desc }}</p>
-          <p v-if="p.tag" class="text-xs text-amber-600 mt-0.5">{{ p.tag }}</p>
-          <p class="mt-3 text-lg font-bold text-orange-600">{{ p.currency }}{{ p.price }} / {{ p.unit }}</p>
+          <h3 class="font-semibold text-gray-800">{{ p.name || p.productName }}</h3>
+          <p class="text-sm text-gray-500 mt-1">{{ p.transportMethod || '' }} · {{ p.cargoType || '' }}</p>
+          <p v-if="p.remark" class="text-xs text-amber-600 mt-0.5">{{ p.remark }}</p>
           <el-button type="primary" size="small" class="mt-3" @click="selectProduct(p)">下单</el-button>
         </div>
       </div>
@@ -244,16 +238,21 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { logisticsProducts } from '@/mock/lineOrders'
-import { shippingAddressesList } from '@/mock/shippingAddresses'
+import { ElMessage } from 'element-plus'
+import { searchLogisticsProducts } from '@/api/logisticsProducts'
+import { searchReceiveAddresses } from '@/api/receiveAddresses'
+import { createLineOrder } from '@/api/lineOrders'
 
 const router = useRouter()
 const step = ref(1)
 const stepTitles = ['订单基本信息', '箱信息', '商品信息']
 const showProductModal = ref(false)
+const saving = ref(false)
+const shippingAddressesList = ref([])
+const logisticsProducts = ref([])
 
 const form = reactive({
-  orderNo: 'EP0120260211002',
+  orderNo: '',
   logisticsProductId: '',
   logisticsProductName: '',
   warehouseId: '1',
@@ -265,7 +264,7 @@ const form = reactive({
   boxes: [
     {
       id: '1',
-      boxNo: 'EP0120260211002_001',
+      boxNo: 'BOX001',
       boxType: '',
       weight: '',
       length: '',
@@ -292,7 +291,8 @@ const form = reactive({
 
 const selectedRecipient = computed(() => {
   if (!form.recipientId) return null
-  return shippingAddressesList.find((r) => r.id === form.recipientId)
+  const id = form.recipientId
+  return shippingAddressesList.value.find((r) => r.id === id || String(r.id) === String(id))
 })
 
 function onRecipientChange() {}
@@ -302,12 +302,12 @@ function boxVolume(box) {
   const w = Number(box.width)
   const h = Number(box.height)
   if (!l || !w || !h) return ''
-  return ((l * w * h) / 1000000).toFixed(4)
+  return (l * w * h) / 1000000
 }
 
 function selectProduct(p) {
   form.logisticsProductId = p.id
-  form.logisticsProductName = p.name
+  form.logisticsProductName = p.name || p.productName
   showProductModal.value = false
 }
 
@@ -318,9 +318,10 @@ function nextStep() {
 function addBox() {
   const n = form.boxes.length + 1
   const suffix = n < 10 ? '00' + n : n < 100 ? '0' + n : String(n)
+  const prefix = form.orderNo || 'BOX'
   form.boxes.push({
     id: String(n),
-    boxNo: form.orderNo + '_' + suffix,
+    boxNo: prefix ? prefix + '_' + suffix : 'BOX' + suffix,
     boxType: '',
     weight: '',
     length: '',
@@ -347,9 +348,10 @@ function addBox() {
 function copyBoxDetail(box) {
   const n = form.boxes.length + 1
   const suffix = n < 10 ? '00' + n : n < 100 ? '0' + n : String(n)
+  const prefix = form.orderNo || 'BOX'
   form.boxes.push({
     id: String(n),
-    boxNo: form.orderNo + '_' + suffix,
+    boxNo: prefix ? prefix + '_' + suffix : 'BOX' + suffix,
     boxType: box.boxType,
     weight: box.weight,
     length: box.length,
@@ -390,15 +392,97 @@ function addItem(box) {
   })
 }
 
-function saveDraft() {
-  router.push('/line-orders')
+function buildPayload(orderStatus) {
+  let totalWeight = 0
+  let totalVolume = 0
+  const boxes = form.boxes.map((box) => {
+    const w = Number(box.weight) || 0
+    const vol = boxVolume(box) || 0
+    totalWeight += w
+    totalVolume += vol
+    const boxPayload = {
+      boxNo: box.boxNo,
+      boxType: box.boxType,
+      weight: w,
+      length: Number(box.length) || null,
+      width: Number(box.width) || null,
+      height: Number(box.height) || null,
+      volume: vol,
+      billingVolume: vol,
+      billingWeight: w,
+      boxMark: box.boxMark || undefined,
+    }
+    const goods = (box.items || []).map((item) => ({
+      goodsName: item.productName,
+      goodsEnglishName: item.englishName,
+      goodsCode: item.productCode,
+      brand: item.brand,
+      material: item.material,
+      spec: item.spec,
+      purpose: item.purpose,
+      quantity: Number(item.quantity) || 0,
+      quantityUnit: item.unit,
+      declaredPrice: item.declaredPrice != null && item.declaredPrice !== '' ? Number(item.declaredPrice) : null,
+      declaredCurrency: item.declaredCurrency,
+      unitWeight: item.singleWeight != null && item.singleWeight !== '' ? Number(item.singleWeight) : null,
+    }))
+    return { box: boxPayload, goods }
+  })
+  const order = {
+    referenceNo: form.customerRef || form.referenceNo || undefined,
+    warehouseId: form.warehouseId != null ? Number(form.warehouseId) : null,
+    logisticsProductId: form.logisticsProductId != null ? Number(form.logisticsProductId) : null,
+    receiveAddressId: form.recipientId != null ? Number(form.recipientId) : null,
+    cargoType: form.cargoType || undefined,
+    orderStatus,
+    feeConfirmed: false,
+    boxQty: form.boxes.length,
+    totalWeight,
+    totalVolume,
+    billingWeight: totalWeight,
+    billingVolume: totalVolume,
+    totalFee: 0,
+    memo: form.remark || undefined,
+  }
+  return { order, boxes }
 }
 
-function finishCreate() {
-  router.push('/line-orders')
+async function saveDraft() {
+  await submitOrder('DRAFT')
 }
 
-onMounted(() => {
-  if (shippingAddressesList.length) form.recipientId = shippingAddressesList[0].id
+async function finishCreate() {
+  if (!form.warehouseId || !form.recipientId || !form.logisticsProductId || !form.cargoType) {
+    ElMessage.warning('请完善基本信息：集运仓、收件信息、物流产品、货物属性')
+    return
+  }
+  await submitOrder('PENDING')
+}
+
+async function submitOrder(orderStatus) {
+  saving.value = true
+  try {
+    const payload = buildPayload(orderStatus)
+    const id = await createLineOrder(payload)
+    ElMessage.success('保存成功')
+    if (id != null) router.push(`/line-orders/${id}`)
+    else router.push('/line-orders')
+  } catch (e) {
+    ElMessage.error(e?.message || '保存失败')
+  } finally {
+    saving.value = false
+  }
+}
+
+onMounted(async () => {
+  const [addrRes, prodRes] = await Promise.all([
+    searchReceiveAddresses({ size: 500 }),
+    searchLogisticsProducts({ size: 500 }),
+  ])
+  shippingAddressesList.value = addrRes.items || []
+  logisticsProducts.value = prodRes.items || []
+  if (shippingAddressesList.value.length && !form.recipientId) {
+    form.recipientId = shippingAddressesList.value[0].id
+  }
 })
 </script>
