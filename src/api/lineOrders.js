@@ -101,3 +101,19 @@ export function printBoxLabels(lineOrderIds) {
     .post('/lineOrders/printBoxLabels', { lineOrderIds: lineOrderIds || [] }, { responseType: 'blob' })
     .then((res) => res.data)
 }
+
+/**
+ * 导出 WMS 入库单 Excel
+ * @param lineOrderIds 专线订单 ID 数组
+ * @param expectedArrivalDate 预计到仓日期，格式 yyyy-MM-dd
+ * @returns Promise<Blob>
+ */
+export function exportWmsInbound(lineOrderIds, expectedArrivalDate) {
+  return request
+    .post(
+      '/lineOrders/exportWmsInbound',
+      { lineOrderIds: lineOrderIds || [], expectedArrivalDate: expectedArrivalDate || '' },
+      { responseType: 'blob' }
+    )
+    .then((res) => res.data)
+}

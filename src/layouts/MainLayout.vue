@@ -63,9 +63,11 @@
               </template>
             </el-dropdown>
           </nav>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="text-sm">operator</span>
-          <button type="button" class="text-sm flex items-center gap-1 hover:opacity-90" @click="logout">
+        <div class="flex items-center gap-3 shrink-0">
+          <span v-if="currentUser" class="text-sm text-white/95">
+            {{ currentUser.name || '用户' }} <span class="opacity-80">·</span> {{ currentUser.email }}
+          </span>
+          <button type="button" class="text-sm flex items-center gap-1 hover:opacity-90" @click="handleLogout">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             退出
           </button>
@@ -100,20 +102,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { getCurrentUser, logout as apiLogout } from '@/api/auth'
 
 const router = useRouter()
 const route = useRoute()
 const mobileMenuOpen = ref(false)
+const currentUser = ref(getCurrentUser())
+
+watch(() => route.path, () => {
+  currentUser.value = getCurrentUser()
+}, { immediate: true })
 
 function isActive(path) {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
 }
 
-function logout() {
-  localStorage.removeItem('oms_token')
+async function handleLogout() {
+  await apiLogout()
+  currentUser.value = null
   router.push('/auth')
 }
 function handleSettingCommand(command) {

@@ -122,6 +122,8 @@ body {
 .el-overlay.is-message-box .el-overlay-message-box::after {
   display: none !important;
 }
+/* 默认与自定义 MessageBox 均使用白底，避免透明 */
+.el-message-box,
 .oms-message-box {
   background-color: #fff !important;
   border: 1px solid rgba(148, 163, 184, 0.35) !important;
@@ -130,17 +132,21 @@ body {
   padding: 20px !important;
   margin: 0 !important;
 }
+.el-message-box .el-message-box__header,
 .oms-message-box .el-message-box__header {
   padding-bottom: 12px;
 }
+.el-message-box .el-message-box__title,
 .oms-message-box .el-message-box__title {
   color: #1e293b;
   font-weight: 600;
 }
+.el-message-box .el-message-box__content,
 .oms-message-box .el-message-box__content {
   padding: 8px 0 16px;
   color: #475569;
 }
+.el-message-box .el-message-box__btns,
 .oms-message-box .el-message-box__btns {
   padding-top: 0;
 }

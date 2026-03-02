@@ -72,7 +72,7 @@
           <el-button size="small">导出 <span class="ml-1">▼</span></el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item>导出Excel</el-dropdown-item>
+              <el-dropdown-item :disabled="selectedRows.length === 0" @click="openExportWmsDialog">导出WMS入库单</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -171,18 +171,50 @@
       </div>
     </div>
 
+    <!-- 导出 WMS 入库单弹窗 -->
+    <el-dialog
+      v-model="showExportWmsDialog"
+      title="导出WMS入库单"
+      width="420px"
+      :close-on-click-modal="false"
+      @close="exportWmsExpectedDate = ''"
+    >
+      <p class="text-slate-600 text-sm mb-4">请选择预计到仓日期，确认后将生成WMS入库单文件</p>
+      <div class="mb-2">
+        <span class="text-sm text-slate-500">预计到仓日期</span>
+      </div>
+      <el-date-picker
+        v-model="exportWmsExpectedDate"
+        type="date"
+        value-format="YYYY-MM-DD"
+        placeholder="选择日期"
+        style="width: 100%"
+        class="mb-4"
+      />
+      <p class="text-slate-500 text-sm">已选择 {{ selectedRows.length }} 个订单</p>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showExportWmsDialog = false">取消</el-button>
+          <el-button type="primary" :loading="exportWmsLoading" @click="confirmExportWms">确认导出</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { searchLineOrders, printBoxLabels } from '@/api/lineOrders'
+import { searchLineOrders, printBoxLabels, exportWmsInbound } from '@/api/lineOrders'
 import { searchLogisticsProducts } from '@/api/logisticsProducts'
 
 const tableRef = ref(null)
 const selectedRows = ref([])
 const printBoxLabelLoading = ref(false)
+const showExportWmsDialog = ref(false)
+const exportWmsExpectedDate = ref('')
+const exportWmsLoading = ref(false)
 
 const list = ref([])
 const total = ref(0)
@@ -298,6 +330,52 @@ async function handlePrintBoxLabels() {
     ElMessage.error(msg)
   } finally {
     printBoxLabelLoading.value = false
+  }
+}
+
+function openExportWmsDialog() {
+  if (selectedRows.value.length === 0) return
+  exportWmsExpectedDate.value = ''
+  showExportWmsDialog.value = true
+}
+
+async function confirmExportWms() {
+  const date = exportWmsExpectedDate.value
+  if (!date || !date.trim()) {
+    ElMessage.warning('请选择预计到仓日期')
+    return
+  }
+  const rows = selectedRows.value
+  const ids = rows.map((r) => r.id).filter((id) => id != null)
+  if (!ids.length) {
+    ElMessage.warning('所选订单无有效ID')
+    return
+  }
+  exportWmsLoading.value = true
+  try {
+    const blob = await exportWmsInbound(ids, date)
+    const url = URL.createObjectURL(blob instanceof Blob ? blob : new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'WMS入库单.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+    showExportWmsDialog.value = false
+    ElMessage.success('导出成功')
+  } catch (e) {
+    let msg = e?.message || '导出失败'
+    if (e?.response?.data instanceof Blob) {
+      try {
+        const text = await e.response.data.text()
+        const j = JSON.parse(text)
+        msg = j.message || j.msg || '导出WMS入库单失败'
+      } catch {
+        msg = '导出WMS入库单失败'
+      }
+    }
+    ElMessage.error(msg)
+  } finally {
+    exportWmsLoading.value = false
   }
 }
 

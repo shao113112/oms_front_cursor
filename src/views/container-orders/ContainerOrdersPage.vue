@@ -46,7 +46,7 @@
             <td class="px-4 py-3 text-gray-800">{{ row.orderNo || '-' }}</td>
             <td class="px-4 py-3 text-gray-600">{{ row.pickupAddress || '-' }}</td>
             <td class="px-4 py-3 text-gray-600">{{ row.receiveAddress || '-' }}</td>
-            <td class="px-4 py-3 text-gray-600">transportMethod</td>
+            <td class="px-4 py-3 text-gray-600">{{ row.transportMethod || '-' }}</td>
             <td class="px-4 py-3 text-gray-600">{{ row.boxQty ?? '-' }}</td>
             <td class="px-4 py-3">
               <span class="text-primary font-medium">{{ orderStatusText[row.orderStatus] || row.orderStatus || '-' }}</span>
