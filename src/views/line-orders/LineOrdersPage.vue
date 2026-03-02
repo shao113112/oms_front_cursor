@@ -66,7 +66,7 @@
       <div class="flex flex-wrap items-center gap-2">
         <el-button size="small">复制</el-button>
         <el-button size="small">重新计费</el-button>
-        <el-button size="small">打印箱唛</el-button>
+        <el-button size="small" :disabled="selectedRows.length === 0" :loading="printBoxLabelLoading" @click="handlePrintBoxLabels">打印箱唛</el-button>
         <el-button size="small">统计装柜</el-button>
         <el-dropdown>
           <el-button size="small">导出 <span class="ml-1">▼</span></el-button>
@@ -94,7 +94,7 @@
     <!-- 表格：横向可滚动，占满宽度 -->
     <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden w-full">
       <div class="responsive-table-container">
-        <el-table :data="list" stripe v-loading="loading" style="width: 100%; min-width: 1200px" max-height="500" class="mobile-table-dense mobile-action-buttons">
+        <el-table ref="tableRef" :data="list" stripe v-loading="loading" style="width: 100%; min-width: 1200px" max-height="500" class="mobile-table-dense mobile-action-buttons" @selection-change="onSelectionChange">
           <el-table-column type="selection" width="40" />
           <el-table-column prop="orderNo" label="订单号" min-width="100" />
           <el-table-column prop="referenceNo" label="参考号" min-width="80">
@@ -170,14 +170,19 @@
         />
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { searchLineOrders } from '@/api/lineOrders'
+import { searchLineOrders, printBoxLabels } from '@/api/lineOrders'
 import { searchLogisticsProducts } from '@/api/logisticsProducts'
+
+const tableRef = ref(null)
+const selectedRows = ref([])
+const printBoxLabelLoading = ref(false)
 
 const list = ref([])
 const total = ref(0)
@@ -250,6 +255,52 @@ async function fetchList() {
   }
 }
 
+function onSelectionChange(rows) {
+  selectedRows.value = rows || []
+}
+
+async function handlePrintBoxLabels() {
+  const rows = selectedRows.value
+  if (!rows.length) {
+    ElMessage.warning('请先勾选要打印箱唛的订单')
+    return
+  }
+  const ids = rows.map((r) => r.id).filter((id) => id != null)
+  if (!ids.length) {
+    ElMessage.warning('所选订单无有效ID')
+    return
+  }
+  printBoxLabelLoading.value = true
+  try {
+    const blob = await printBoxLabels(ids)
+    const url = URL.createObjectURL(blob instanceof Blob ? blob : new Blob([blob], { type: 'application/pdf' }))
+    const win = window.open(url, '_blank', 'noopener,noreferrer')
+    if (win) {
+      setTimeout(() => {
+        try { win.print() } catch (_) {}
+        setTimeout(() => URL.revokeObjectURL(url), 60000)
+      }, 2000)
+    } else {
+      ElMessage.warning('请允许弹窗以打开打印预览')
+      URL.revokeObjectURL(url)
+    }
+  } catch (e) {
+    let msg = e?.message || '打印箱唛失败'
+    if (e?.response?.data instanceof Blob) {
+      try {
+        const text = await e.response.data.text()
+        const j = JSON.parse(text)
+        msg = j.message || j.msg || '所选订单没有可打印的箱信息或请求失败'
+      } catch {
+        msg = '所选订单没有可打印的箱信息或请求失败'
+      }
+    }
+    ElMessage.error(msg)
+  } finally {
+    printBoxLabelLoading.value = false
+  }
+}
+
 function doSearch() {
   currentPage.value = 1
   fetchList()
@@ -312,4 +363,5 @@ onMounted(() => {
   padding-left: 8px;
   padding-right: 8px;
 }
+
 </style>

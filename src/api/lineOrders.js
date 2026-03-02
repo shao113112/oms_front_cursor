@@ -91,3 +91,13 @@ export function updateLineOrderBoxBilling(data) {
     })
     .then(() => {})
 }
+
+/**
+ * 打印箱唛：根据选中订单 ID 列表生成 PDF，返回 Blob（用于预览/下载）
+ * @param lineOrderIds 专线订单 ID 数组
+ */
+export function printBoxLabels(lineOrderIds) {
+  return request
+    .post('/lineOrders/printBoxLabels', { lineOrderIds: lineOrderIds || [] }, { responseType: 'blob' })
+    .then((res) => res.data)
+}
