@@ -23,7 +23,9 @@ export default defineConfig({
       dts: 'src/auto-imports.d.ts',
     }),
     Components({
-      resolvers: [ElementPlusResolver()],
+      resolvers: [
+        ElementPlusResolver({ importStyle: 'css' }),
+      ],
       dts: 'src/components.d.ts',
     }),
   ],

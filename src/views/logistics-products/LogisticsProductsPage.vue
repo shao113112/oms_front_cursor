@@ -6,7 +6,8 @@
     </div>
 
     <div class="table-card">
-      <el-table :data="list" stripe v-loading="loading">
+      <div class="responsive-table-container">
+        <el-table :data="list" stripe v-loading="loading" style="width: 100%" class="mobile-table-dense mobile-action-buttons">
         <el-table-column label="排序" width="80" align="center">
           <template #default>
             <span class="text-slate-400 cursor-pointer">↑</span>
@@ -14,9 +15,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="name" label="产品名称" min-width="160" />
-        <el-table-column prop="transportMethod" label="运输方式" width="100" />
-        <el-table-column prop="cargoType" label="货物类型" width="100" />
-        <el-table-column prop="remark" label="产品备注" width="100" />
+        <el-table-column prop="transportMethod" label="运输方式" min-width="100" />
+        <el-table-column prop="cargoType" label="货物类型" min-width="100" />
+        <el-table-column prop="remark" label="产品备注" min-width="100" />
         <el-table-column prop="enabledStatus" label="状态" width="80">
           <template #default="{ row }">
             <span :class="row.enabledStatus === 'AVAILABLE' ? 'text-green-600' : 'text-slate-500'">{{ row.enabledStatus === 'AVAILABLE' ? '启用' : '停用' }}</span>
@@ -30,6 +31,27 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
+      <div class="pagination-bar">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">每页显示</span>
+          <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1; fetchList()">
+            <el-option label="10条" :value="10" />
+            <el-option label="20条" :value="20" />
+            <el-option label="50条" :value="50" />
+            <el-option label="100条" :value="100" />
+          </el-select>
+        </div>
+        <el-pagination
+          v-model:current-page="currentPage"
+          layout="prev, pager, next"
+          :total="total"
+          :page-size="pageSize"
+          :small="true"
+          class="[&_.el-pagination__editor]:hidden"
+          @current-change="fetchList"
+        />
+      </div>
     </div>
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑产品' : '添加产品'" width="500px" destroy-on-close @close="resetForm">
@@ -80,6 +102,9 @@ import {
 const list = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
 function mapItem(row) {
   const enabledStatus = row.enabledStatus ?? (row.enabledStatusText?.includes('停用') ? 'UNAVAILABLE' : 'AVAILABLE')
@@ -101,10 +126,13 @@ function formatDate(v) {
 async function fetchList() {
   loading.value = true
   try {
-    const res = await searchLogisticsProducts({ page: 1, size: 500 })
+    const res = await searchLogisticsProducts({ page: currentPage.value, size: pageSize.value })
     list.value = (res.items || []).map(mapItem)
+    total.value = res.total ?? 0
   } catch (e) {
     ElMessage.error(e.message || '加载失败')
+    list.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -197,7 +225,7 @@ async function handleDelete(row) {
       customClass: 'oms-message-box',
     })
     await deleteLogisticsProduct(row.id)
-    list.value = list.value.filter((i) => i.id !== row.id)
+    await fetchList()
     ElMessage.success('删除成功')
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '删除失败')

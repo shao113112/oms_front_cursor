@@ -10,7 +10,9 @@
   font-display: swap;
 }
 
+/* ========== OMS 与 Element Plus 主题统一（参考 element-plus 官网） ========== */
 :root {
+  /* OMS 品牌色（与 Element Plus 主色一致） */
   --oms-primary: #6366F1;
   --oms-primary-light: #818CF8;
   --oms-header-bg: #0F172A;
@@ -18,7 +20,40 @@
   --oms-surface: #F8FAFC;
   --oms-card-radius: 16px;
   --oms-shadow-soft: 0 2px 8px -2px rgb(0 0 0 / 0.08), 0 4px 16px -4px rgb(0 0 0 / 0.06);
+
+  /* Element Plus 主色系（与 OMS 主色统一） */
+  --el-color-primary: #6366F1;
+  --el-color-primary-light-3: #818CF8;
+  --el-color-primary-light-5: #A5B4FC;
+  --el-color-primary-light-7: #C7D2FE;
+  --el-color-primary-light-8: #DDD6FE;
+  --el-color-primary-light-9: #EDE9FE;
+  --el-color-primary-dark-2: #4F46E5;
 }
+
+/* 深色模式：页面与主内容区背景（Element 组件由 dark/css-vars.css 处理） */
+html.dark .main-content,
+html.dark body {
+  background-color: var(--el-bg-color-page, #0d1117);
+}
+html.dark .page-card,
+html.dark .table-card {
+  background-color: var(--el-bg-color, #1d1e1f);
+  border-color: var(--el-border-color-lighter, #414243);
+}
+html.dark .page-title,
+html.dark .section-title { color: var(--el-text-color-primary, #e5e7eb); }
+html.dark .page-subtitle,
+html.dark .filter-field__label { color: var(--el-text-color-secondary, #9ca3af); }
+
+/* 深色模式：仪表盘等使用 bg-white 的卡片 */
+html.dark .main-content .bg-white {
+  background-color: var(--el-bg-color, #1d1e1f) !important;
+  border-color: var(--el-border-color-lighter, #414243);
+}
+html.dark .main-content .text-slate-800 { color: var(--el-text-color-primary, #e5e7eb); }
+html.dark .main-content .text-slate-600 { color: var(--el-text-color-regular, #c0c4cc); }
+html.dark .main-content .text-slate-500 { color: var(--el-text-color-secondary, #909399); }
 
 html {
   scroll-behavior: smooth;
@@ -74,6 +109,19 @@ body {
 .tag-default { @apply px-2 py-0.5 rounded text-sm bg-slate-100 text-slate-700; }
 .divider-vertical { @apply inline-block w-px h-5 bg-slate-200; }
 .filter-field-label { @apply text-sm text-slate-500 block mb-0.5; }
+/* 筛选区表单项：标签在上、控件在下，与 page-card 搭配 */
+.filter-field {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.filter-field__label {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.2;
+  padding-left: 1px;
+}
 .form-block-inner { @apply border border-slate-200 rounded-lg p-4; }
 .form-block-inner-xl { @apply border border-slate-200 rounded-xl p-4; }
 
@@ -112,13 +160,7 @@ body {
   color: var(--oms-primary-light);
 }
 
-/* Element Plus 主色覆盖 */
-.el-button--primary {
-  --el-button-bg-color: #6366F1;
-  --el-button-border-color: #6366F1;
-  --el-button-hover-bg-color: #4F46E5;
-  --el-button-hover-border-color: #4F46E5;
-}
+/* Element Plus 按钮等使用 :root 中的 --el-color-primary，无需重复覆盖 */
 
 /* 删除确认等 MessageBox：视口居中 + 浅色遮罩 + 白卡片 */
 .el-overlay.is-message-box {

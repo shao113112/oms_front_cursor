@@ -6,10 +6,11 @@
     </div>
 
     <div class="table-card">
-      <el-table :data="list" stripe v-loading="loading">
+      <div class="responsive-table-container">
+        <el-table :data="list" stripe v-loading="loading" style="width: 100%" class="mobile-table-dense mobile-action-buttons">
         <el-table-column prop="productName" label="物流产品" min-width="160" />
-        <el-table-column prop="feeName" label="费用名称" width="120" />
-        <el-table-column prop="calcMethod" label="计算方式" width="120" />
+        <el-table-column prop="feeName" label="费用名称" min-width="120" />
+        <el-table-column prop="calcMethod" label="计算方式" min-width="120" />
         <el-table-column prop="currency" label="币种" width="80" />
         <el-table-column label="单价/单位" width="140">
           <template #default="{ row }">
@@ -30,16 +31,24 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <div class="flex justify-end mt-4">
+      </div>
+      <div class="pagination-bar">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">每页显示</span>
+          <el-select v-model="pageSize" style="width: 100px" @change="page = 1; fetchList()">
+            <el-option label="10条" :value="10" />
+            <el-option label="20条" :value="20" />
+            <el-option label="50条" :value="50" />
+          </el-select>
+        </div>
         <el-pagination
           v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50]"
+          :page-size="pageSize"
           :total="total"
-          layout="total, sizes, prev, pager, next"
+          layout="prev, pager, next"
+          :small="true"
+          class="[&_.el-pagination__editor]:hidden"
           @current-change="fetchList"
-          @size-change="fetchList"
         />
       </div>
     </div>

@@ -2,8 +2,8 @@
   <div v-loading="loading" class="page-wrap">
     <div v-if="detail" class="space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <router-link to="/container-orders" class="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 text-sm">
-          <span>←</span> 返回
+        <router-link to="/container-orders" class="link-back">
+          <span aria-hidden="true">←</span> 返回
         </router-link>
         <div class="flex items-center gap-3">
           <h1 class="text-xl font-bold text-slate-800">整柜订单详情</h1>

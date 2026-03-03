@@ -13,7 +13,13 @@ export function login(data) {
       localStorage.setItem(TOKEN_KEY, d.token)
     }
     if (d && (d.name != null || d.email != null)) {
-      localStorage.setItem(USER_KEY, JSON.stringify({ name: d.name || '', email: d.email || '' }))
+      localStorage.setItem(USER_KEY, JSON.stringify({
+        id: d.id ?? null,
+        name: d.name || '',
+        email: d.email || '',
+        company: d.company ?? '',
+        mainId: d.mainId ?? d.id ?? null,
+      }))
     }
     return res.data
   })

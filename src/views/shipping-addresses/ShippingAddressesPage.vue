@@ -6,9 +6,10 @@
     </div>
 
     <div class="table-card">
-      <el-table :data="list" stripe v-loading="loading">
-        <el-table-column prop="recipient" label="收件人" width="140" />
-        <el-table-column prop="contact" label="联系方式" width="160" />
+      <div class="responsive-table-container">
+        <el-table :data="list" stripe v-loading="loading" style="width: 100%" class="mobile-table-dense mobile-action-buttons">
+        <el-table-column prop="recipient" label="收件人" min-width="140" />
+        <el-table-column prop="contact" label="联系方式" min-width="160" />
         <el-table-column prop="address" label="详细地址" min-width="220" show-overflow-tooltip />
         <el-table-column prop="isDefault" label="默认地址" width="100">
           <template #default="{ row }">
@@ -23,6 +24,27 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
+      <div class="pagination-bar">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">每页显示</span>
+          <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1; fetchList()">
+            <el-option label="10条" :value="10" />
+            <el-option label="20条" :value="20" />
+            <el-option label="50条" :value="50" />
+            <el-option label="100条" :value="100" />
+          </el-select>
+        </div>
+        <el-pagination
+          v-model:current-page="currentPage"
+          layout="prev, pager, next"
+          :total="total"
+          :page-size="pageSize"
+          :small="true"
+          class="[&_.el-pagination__editor]:hidden"
+          @current-change="fetchList"
+        />
+      </div>
     </div>
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑收件信息' : '新增收件信息'" width="500px" destroy-on-close @close="resetForm">
@@ -61,6 +83,9 @@ import {
 const list = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
 function mapItem(row) {
   return {
@@ -73,10 +98,15 @@ function mapItem(row) {
 async function fetchList() {
   loading.value = true
   try {
-    const res = await searchReceiveAddresses({ page: 1, size: 500 })
-    list.value = (res.items || []).map(mapItem)
+    const res = await searchReceiveAddresses({ page: currentPage.value, size: pageSize.value })
+    const raw = res && typeof res === 'object' ? res : {}
+    const items = Array.isArray(raw.items) ? raw.items : []
+    list.value = items.map(mapItem)
+    total.value = Number(raw.total) >= 0 ? Number(raw.total) : 0
   } catch (e) {
-    ElMessage.error(e.message || '加载失败')
+    ElMessage.error(e?.message || '加载失败')
+    list.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -179,7 +209,7 @@ async function handleDelete(row) {
       customClass: 'oms-message-box',
     })
     await deleteReceiveAddress(id)
-    list.value = list.value.filter((a) => a.id !== id)
+    await fetchList()
     ElMessage.success('删除成功')
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e.message || '删除失败')

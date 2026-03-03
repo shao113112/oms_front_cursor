@@ -16,7 +16,7 @@
             aria-label="打开菜单"
             @click="mobileMenuOpen = true"
           >
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            <el-icon :size="24"><Menu /></el-icon>
           </button>
         </div>
         <nav class="hidden md:flex items-center justify-center gap-0.5 absolute left-1/2 top-0 bottom-0 -translate-x-1/2">
@@ -25,7 +25,7 @@
               class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] hover:bg-white/10"
               :class="route.path === '/' ? 'bg-white/10 text-white' : ''"
             >
-              <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              <el-icon class="w-5 h-5 mb-0.5" :size="20"><Odometer /></el-icon>
               <span class="text-sm">仪表盘</span>
             </router-link>
             <router-link
@@ -33,7 +33,7 @@
               class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] hover:bg-white/10"
               :class="isActive('/line-orders') ? 'bg-white/10 text-white' : ''"
             >
-              <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <el-icon class="w-5 h-5 mb-0.5" :size="20"><Document /></el-icon>
               <span class="text-sm">专线订单</span>
             </router-link>
             <router-link
@@ -41,23 +41,23 @@
               class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] hover:bg-white/10"
               :class="isActive('/container-orders') ? 'bg-white/10 text-white' : ''"
             >
-              <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+              <el-icon class="w-5 h-5 mb-0.5" :size="20"><Box /></el-icon>
               <span class="text-sm">整柜订单</span>
             </router-link>
-            <el-dropdown ref="settingDropdownRef" trigger="click" class="ml-0.5">
+            <el-dropdown ref="settingDropdownRef" trigger="click" class="ml-0.5" @command="goToSetting">
               <span
                 class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] cursor-pointer hover:bg-white/10 text-white"
                 :class="isActive('/users') || isActive('/logistics-products') || isActive('/pricing-rules') || isActive('/shipping-addresses') || isActive('/pickup-addresses') ? 'bg-white/10' : ''"
               >
-                <svg class="w-5 h-5 mb-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span class="text-sm inline-flex items-center gap-0.5">系统设置 <svg class="w-3.5 h-3.5 inline opacity-90" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></span>
+                <el-icon class="w-5 h-5 mb-0.5 shrink-0" :size="20"><Setting /></el-icon>
+                <span class="text-sm inline-flex items-center gap-0.5">系统设置 <el-icon :size="14" class="inline opacity-90"><CaretBottom /></el-icon></span>
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item
                     v-for="item in settingMenuItems"
                     :key="item.path"
-                    @click="goToSetting(item.path)"
+                    :command="item.path"
                   >
                     {{ item.label }}
                   </el-dropdown-item>
@@ -65,14 +65,34 @@
               </template>
             </el-dropdown>
           </nav>
-        <div class="flex items-center gap-3 shrink-0">
-          <span v-if="currentUser" class="text-sm text-white/95">
-            {{ currentUser.name || '用户' }} <span class="opacity-80">·</span> {{ currentUser.email }}
-          </span>
-          <button type="button" class="text-sm flex items-center gap-1 hover:opacity-90" @click="handleLogout">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            退出
-          </button>
+        <div class="flex items-center gap-2 md:gap-3 shrink-0">
+          <!-- 主题 -->
+          <el-dropdown trigger="click" @command="setTheme">
+            <button type="button" class="p-2 rounded hover:bg-white/10 text-white/95 flex items-center gap-1 text-sm" aria-label="切换主题">
+              <el-icon :size="18"><Sunny v-if="theme === 'light'" /><Moon v-else /></el-icon>
+              <span class="hidden sm:inline">{{ themeLabel }}</span>
+              <el-icon :size="14"><CaretBottom /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="light" :class="{ 'is-active': theme === 'light' }">浅色</el-dropdown-item>
+                <el-dropdown-item command="dark" :class="{ 'is-active': theme === 'dark' }">深色</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <!-- 当前用户：仅展示 name，点击下拉：修改密码、退出 -->
+          <el-dropdown v-if="currentUser" trigger="click" @command="onUserCommand">
+            <span class="text-sm text-white/95 cursor-pointer flex items-center gap-0.5 hover:bg-white/10 rounded px-2 py-1">
+              {{ currentUser.name || '用户' }}
+              <el-icon :size="14"><CaretBottom /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="changePwd">修改密码</el-dropdown-item>
+                <el-dropdown-item command="logout">退出</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
     </header>
@@ -81,11 +101,17 @@
     <el-drawer v-model="mobileMenuOpen" direction="ltr" size="280px" title="菜单" append-to-body>
       <nav class="flex flex-col gap-1 px-2">
         <router-link to="/" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">
-          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <el-icon class="w-5 h-5 text-slate-500" :size="20"><Odometer /></el-icon>
           仪表盘
         </router-link>
-        <router-link to="/line-orders" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">专线订单</router-link>
-        <router-link to="/container-orders" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">整柜订单</router-link>
+        <router-link to="/line-orders" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">
+          <el-icon class="w-5 h-5 text-slate-500 shrink-0" :size="20"><Document /></el-icon>
+          专线订单
+        </router-link>
+        <router-link to="/container-orders" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">
+          <el-icon class="w-5 h-5 text-slate-500 shrink-0" :size="20"><Box /></el-icon>
+          整柜订单
+        </router-link>
         <div class="border-t pt-2 mt-2">
           <p class="px-3 py-1 text-sm text-slate-500">系统设置</p>
           <router-link to="/pickup-addresses" class="block px-3 py-2.5 rounded-lg hover:bg-slate-100" @click="mobileMenuOpen = false">提货地址</router-link>
@@ -100,19 +126,61 @@
     <main class="flex-1 p-4 md:p-6 main-content">
       <router-view />
     </main>
+
+    <!-- 修改密码弹窗 -->
+    <el-dialog v-model="pwdDialogVisible" title="修改密码" width="400px" :close-on-click-modal="false" @close="resetPwdForm">
+      <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="100px">
+        <el-form-item label="原密码" prop="pwd">
+          <el-input v-model="pwdForm.pwd" type="password" show-password placeholder="请输入原密码" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPwd">
+          <el-input v-model="pwdForm.newPwd" type="password" show-password placeholder="请输入新密码" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="确认新密码" prop="newPwdConfirm">
+          <el-input v-model="pwdForm.newPwdConfirm" type="password" show-password placeholder="请再次输入新密码" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="pwdDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="pwdSubmitting" @click="submitUpdatePwd">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { getCurrentUser, logout as apiLogout } from '@/api/auth'
+import { updatePwd as apiUpdatePwd } from '@/api/users'
+import { useLocaleTheme } from '@/composables/useLocaleTheme'
 
 const router = useRouter()
 const route = useRoute()
 const mobileMenuOpen = ref(false)
 const settingDropdownRef = ref(null)
 const currentUser = ref(getCurrentUser())
+
+const pwdDialogVisible = ref(false)
+const pwdFormRef = ref(null)
+const pwdSubmitting = ref(false)
+const pwdForm = ref({ pwd: '', newPwd: '', newPwdConfirm: '' })
+const validateConfirm = (_rule, value, callback) => {
+  if (value !== pwdForm.value.newPwd) callback(new Error('两次输入的新密码不一致'))
+  else callback()
+}
+const pwdRules = {
+  pwd: [{ required: true, message: '请输入原密码', trigger: 'blur' }],
+  newPwd: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
+  newPwdConfirm: [
+    { required: true, message: '请再次输入新密码', trigger: 'blur' },
+    { validator: validateConfirm, trigger: 'blur' },
+  ],
+}
+
+const { theme, setTheme } = useLocaleTheme()
+const themeLabel = computed(() => ((theme?.value ?? theme) === 'dark' ? '深色' : '浅色'))
 
 const settingMenuItems = [
   { path: '/users', label: '用户管理' },
@@ -131,13 +199,45 @@ function isActive(path) {
   return route.path.startsWith(path)
 }
 
+function onUserCommand(command) {
+  if (command === 'changePwd') pwdDialogVisible.value = true
+  else if (command === 'logout') handleLogout()
+}
+
+function resetPwdForm() {
+  pwdForm.value = { pwd: '', newPwd: '', newPwdConfirm: '' }
+  pwdFormRef.value?.clearValidate()
+}
+
+async function submitUpdatePwd() {
+  const valid = await pwdFormRef.value?.validate().then(() => true).catch(() => false)
+  if (!valid) return
+  const { pwd, newPwd } = pwdForm.value
+  const id = currentUser.value?.id
+  if (!id) {
+    ElMessage.error('无法获取当前用户，请重新登录')
+    return
+  }
+  pwdSubmitting.value = true
+  try {
+    await apiUpdatePwd({ id, pwd, newPwd })
+    ElMessage.success('密码修改成功')
+    pwdDialogVisible.value = false
+    resetPwdForm()
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message ?? e?.message ?? '修改失败')
+  } finally {
+    pwdSubmitting.value = false
+  }
+}
+
 async function handleLogout() {
   await apiLogout()
   currentUser.value = null
   router.push('/auth')
 }
 function goToSetting(path) {
-  router.push(path)
+  if (path) router.push(path)
   settingDropdownRef.value?.handleClose?.()
 }
 </script>

@@ -1,12 +1,9 @@
 <template>
-  <div class="w-full min-w-0">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <h1 class="text-xl font-bold text-slate-800 tracking-tight">专线订单管理</h1>
-      <router-link
-        to="/line-orders/create"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-dark shrink-0"
-      >
-        <span class="text-lg">+</span> 新建订单
+  <div class="page-wrap">
+    <div class="page-title-row">
+      <h1 class="page-title">专线订单管理</h1>
+      <router-link to="/line-orders/create" class="btn-primary-main">
+        <span class="text-lg" aria-hidden="true">+</span> 新建订单
       </router-link>
     </div>
 
@@ -60,7 +57,7 @@
     <!-- 操作栏：搜索/重置 左侧，复制等 右侧 -->
     <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
       <div class="flex items-center gap-2">
-        <el-button type="primary" @click="doSearch">搜索</el-button>
+        <el-button type="primary" @click="doSearch">查询</el-button>
         <el-button @click="resetSearch">重置</el-button>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -151,21 +148,23 @@
           <el-table-column label="创建时间" width="140">
             <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
           </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          <el-table-column label="操作" width="100" fixed="right" align="center">
             <template #default="{ row }">
-              <!-- 草稿：编辑 + 删除 -->
-              <template v-if="row.orderStatus === 'DRAFT'">
-                <router-link :to="`/line-orders/create?draftId=${row.id}`" class="inline-flex text-slate-500 hover:text-primary mr-2" title="编辑">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <div class="flex items-center justify-center gap-1">
+                <!-- 草稿：编辑 + 删除 -->
+                <template v-if="row.orderStatus === 'DRAFT'">
+                  <router-link :to="`/line-orders/create?draftId=${row.id}`" class="inline-flex items-center justify-center text-slate-500 hover:text-primary p-0.5" title="编辑">
+                    <el-icon :size="18"><Edit /></el-icon>
+                  </router-link>
+                  <el-button type="danger" link class="p-0.5 min-w-0 inline-flex items-center justify-center text-red-500 hover:text-red-600" title="删除" @click="handleDeleteDraft(row)">
+                    <el-icon :size="18"><Delete /></el-icon>
+                  </el-button>
+                </template>
+                <!-- 非草稿：查看详情 -->
+                <router-link v-else :to="`/line-orders/${row.id}`" class="inline-flex items-center justify-center text-slate-500 hover:text-primary p-0.5" title="查看">
+                  <el-icon :size="18"><View /></el-icon>
                 </router-link>
-                <el-button type="danger" link class="p-0 min-w-0 inline-flex text-red-500 hover:text-red-600" title="删除" @click="handleDeleteDraft(row)">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </el-button>
-              </template>
-              <!-- 非草稿：查看详情 -->
-              <router-link v-else :to="`/line-orders/${row.id}`" class="text-slate-500 hover:text-primary inline-flex">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 30 14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </router-link>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -175,6 +174,7 @@
           <div class="flex items-center gap-2">
             <span class="text-slate-500">每页显示</span>
             <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1; fetchList()">
+              <el-option label="10条" :value="10" />
               <el-option label="20条" :value="20" />
               <el-option label="50条" :value="50" />
               <el-option label="100条" :value="100" />
@@ -246,7 +246,7 @@ const loading = ref(false)
 const searchKeyword = ref('')
 const activeStatus = ref('all')
 const currentPage = ref(1)
-const pageSize = ref(20)
+const pageSize = ref(10)
 const logisticsProducts = ref([])
 const filters = reactive({
   logisticsProductId: '',
@@ -476,18 +476,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.filter-field {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-.filter-field__label {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-  line-height: 1.2;
-  padding-left: 1px;
-}
 .line-order-status-tabs :deep(.el-tabs__header) {
   margin-bottom: 0;
 }

@@ -1,9 +1,9 @@
 <template>
-  <div v-loading="loading" class="max-w-full min-h-[200px]">
+  <div v-loading="loading" class="page-wrap max-w-full min-h-[200px]">
   <div v-if="order" class="max-w-full">
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-      <router-link to="/line-orders" class="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 text-sm">
-        <span>←</span> 返回
+      <router-link to="/line-orders" class="link-back">
+        <span aria-hidden="true">←</span> 返回
       </router-link>
       <div>
         <h1 class="text-xl font-bold text-slate-800">订单详情</h1>
