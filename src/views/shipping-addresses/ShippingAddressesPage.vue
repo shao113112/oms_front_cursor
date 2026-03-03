@@ -1,11 +1,11 @@
 <template>
-  <div class="w-full min-w-0">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <h1 class="text-xl font-bold text-gray-800">收件信息管理</h1>
+  <div class="page-wrap">
+    <div class="page-title-row">
+      <h1 class="page-title">收件信息管理</h1>
       <el-button type="primary" @click="openDialog">+ 新增收件信息</el-button>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden">
+    <div class="table-card">
       <el-table :data="list" stripe v-loading="loading">
         <el-table-column prop="recipient" label="收件人" width="140" />
         <el-table-column prop="contact" label="联系方式" width="160" />
@@ -13,7 +13,7 @@
         <el-table-column prop="isDefault" label="默认地址" width="100">
           <template #default="{ row }">
             <span v-if="row.isDefault" class="text-primary">默认</span>
-            <span v-else class="text-gray-500">-</span>
+            <span v-else class="text-slate-500">-</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="120" fixed="right">
@@ -117,6 +117,18 @@ function resetForm() {
 }
 
 async function submitForm() {
+  if (!(form.recipient != null && String(form.recipient).trim())) {
+    ElMessage.warning('请输入收件人')
+    return
+  }
+  if (!(form.contact != null && String(form.contact).trim())) {
+    ElMessage.warning('请输入联系方式')
+    return
+  }
+  if (!(form.address != null && String(form.address).trim())) {
+    ElMessage.warning('请输入详细地址')
+    return
+  }
   saving.value = true
   try {
     if (editingId.value) {

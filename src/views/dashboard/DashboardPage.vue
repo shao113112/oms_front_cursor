@@ -1,7 +1,7 @@
 <template>
-  <div class="max-w-6xl mx-auto">
+  <div class="page-wrap max-w-6xl mx-auto">
     <h1 class="text-2xl font-bold text-slate-800 tracking-tight">欢迎使用货代管理系统</h1>
-    <p class="text-sm text-slate-500 mt-1 mb-6">管理您的专线订单和整柜订单</p>
+    <p class="page-subtitle mb-6">管理您的专线订单和整柜订单</p>
 
     <!-- 4 个统计卡片 -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

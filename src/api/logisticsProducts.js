@@ -1,5 +1,16 @@
 import { request } from './request'
 
+/** 下拉/列表用：不分页，返回数组 */
+export function listLogisticsProducts(params = {}) {
+  return request
+    .post('/logisticsProducts/list', {
+      productName: params.productName ?? undefined,
+      transportMethod: params.transportMethod ?? undefined,
+      cargoType: params.cargoType ?? undefined,
+    })
+    .then((res) => res.data?.data ?? [])
+}
+
 /** 后端 PageBean: { page, size, total, totalPage, items } */
 export function searchLogisticsProducts(params = {}) {
   return request

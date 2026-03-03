@@ -1,71 +1,71 @@
 <template>
-  <div v-loading="loading" class="w-full min-w-0">
+  <div v-loading="loading" class="page-wrap">
     <div v-if="detail" class="space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <router-link to="/container-orders" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 text-sm">
+        <router-link to="/container-orders" class="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 text-sm">
           <span>←</span> 返回
         </router-link>
         <div class="flex items-center gap-3">
-          <h1 class="text-xl font-bold text-gray-800">整柜订单详情</h1>
-          <span class="px-2 py-0.5 rounded text-sm bg-gray-100 text-gray-700">{{ orderStatusText[detail.order?.orderStatus] || detail.order?.orderStatus || '-' }}</span>
+          <h1 class="text-xl font-bold text-slate-800">整柜订单详情</h1>
+          <span class="px-2 py-0.5 rounded text-sm bg-slate-100 text-slate-700">{{ orderStatusText[detail.order?.orderStatus] || detail.order?.orderStatus || '-' }}</span>
         </div>
       </div>
 
       <!-- 订单信息 -->
-      <section class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">订单信息</h2>
+      <section class="page-card page-card-padding">
+        <h2 class="section-title">订单信息</h2>
         <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-          <div><span class="text-gray-500 block mb-0.5">订单号</span><div class="text-gray-800">{{ detail.order?.orderNo || '-' }}</div></div>
-          <div><span class="text-gray-500 block mb-0.5">运输方式</span><div class="text-gray-800">{{ detail.order?.transportMethod || '-' }}</div></div>
-          <div><span class="text-gray-500 block mb-0.5">箱数</span><div class="text-gray-800">{{ detail.order?.boxQty ?? '-' }} 箱</div></div>
-          <div><span class="text-gray-500 block mb-0.5">创建时间</span><div class="text-gray-800">{{ formatTime(detail.order?.createTime) }}</div></div>
-          <div class="col-span-2"><span class="text-gray-500 block mb-0.5">备注</span><div class="text-gray-800">{{ detail.order?.memo || '-' }}</div></div>
+          <div><span class="text-slate-500 block mb-0.5">订单号</span><div class="text-slate-800">{{ detail.order?.orderNo || '-' }}</div></div>
+          <div><span class="text-slate-500 block mb-0.5">运输方式</span><div class="text-slate-800">{{ detail.order?.transportMethod || '-' }}</div></div>
+          <div><span class="text-slate-500 block mb-0.5">箱数</span><div class="text-slate-800">{{ detail.order?.boxQty ?? '-' }} 箱</div></div>
+          <div><span class="text-slate-500 block mb-0.5">创建时间</span><div class="text-slate-800">{{ formatTime(detail.order?.createTime) }}</div></div>
+          <div class="col-span-2"><span class="text-slate-500 block mb-0.5">备注</span><div class="text-slate-800">{{ detail.order?.memo || '-' }}</div></div>
         </div>
       </section>
 
       <!-- 提货地址 -->
-      <section class="address-block bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">提货地址</h2>
+      <section class="address-block page-card page-card-padding">
+        <h2 class="section-title">提货地址</h2>
         <div class="flex flex-col gap-2 text-sm">
-          <p><span class="text-gray-500">联系人:</span> {{ detail.order?.pickupContactName ?? '-' }}</p>
-          <p><span class="text-gray-500">联系电话:</span> {{ detail.order?.pickupPhone ?? '-' }}</p>
-          <p><span class="text-gray-500">详细地址:</span> {{ detail.order?.pickupAddress ?? '-' }}</p>
+          <p><span class="text-slate-500">联系人:</span> {{ detail.order?.pickupContactName ?? '-' }}</p>
+          <p><span class="text-slate-500">联系电话:</span> {{ detail.order?.pickupPhone ?? '-' }}</p>
+          <p><span class="text-slate-500">详细地址:</span> {{ detail.order?.pickupAddress ?? '-' }}</p>
         </div>
       </section>
 
       <!-- 收件地址 -->
-      <section class="address-block bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">收件地址</h2>
+      <section class="address-block page-card page-card-padding">
+        <h2 class="section-title">收件地址</h2>
         <div class="flex flex-col gap-2 text-sm">
-          <p><span class="text-gray-500">联系人:</span> {{ detail.order?.receiveContactName ?? '-' }}</p>
-          <p><span class="text-gray-500">联系电话:</span> {{ detail.order?.receivePhone ?? '-' }}</p>
-          <p><span class="text-gray-500">详细地址:</span> {{ detail.order?.receiveAddress ?? detail.order?.shippingAddress ?? '-' }}</p>
+          <p><span class="text-slate-500">联系人:</span> {{ detail.order?.receiveContactName ?? '-' }}</p>
+          <p><span class="text-slate-500">联系电话:</span> {{ detail.order?.receivePhone ?? '-' }}</p>
+          <p><span class="text-slate-500">详细地址:</span> {{ detail.order?.receiveAddress ?? detail.order?.shippingAddress ?? '-' }}</p>
         </div>
       </section>
 
       <!-- 申报信息 -->
-      <section class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">申报信息</h2>
-        <div v-if="!detail.goods || detail.goods.length === 0" class="py-8 text-center text-gray-400">
+      <section class="page-card page-card-padding">
+        <h2 class="section-title">申报信息</h2>
+        <div v-if="!detail.goods || detail.goods.length === 0" class="py-8 text-center text-slate-400">
           暂无申报商品
         </div>
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm min-w-[900px]">
-            <thead class="bg-gray-50">
+            <thead class="bg-slate-50">
               <tr>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">商品名称</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">英文名称</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">品牌</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">申报价格</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">数量</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">箱数</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">总价</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">材质</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">规格</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">用途</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">商品名称</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">英文名称</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">品牌</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">申报价格</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">数量</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">箱数</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">总价</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">材质</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">规格</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-700">用途</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="divide-y divide-slate-200">
               <tr v-for="(item, i) in detail.goods" :key="item.id || i">
                 <td class="px-4 py-2">{{ item.goodsName || '-' }}</td>
                 <td class="px-4 py-2">{{ item.goodsEnglishName || '-' }}</td>
@@ -81,14 +81,14 @@
             </tbody>
           </table>
         </div>
-        <div class="mt-4 flex gap-6 text-sm text-gray-600">
+        <div class="mt-4 flex gap-6 text-sm text-slate-600">
           <span>总件数: {{ totalPieces }}</span>
           <span>总箱数: {{ detail.order?.boxQty ?? 0 }}</span>
           <span>申报总货值: {{ totalDeclaredValue }}</span>
         </div>
       </section>
     </div>
-    <div v-else-if="!loading" class="py-12 text-center text-gray-500">
+    <div v-else-if="!loading" class="py-12 text-center text-slate-500">
       订单不存在
       <router-link to="/container-orders" class="text-primary ml-2">返回列表</router-link>
     </div>

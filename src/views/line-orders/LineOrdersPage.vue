@@ -11,7 +11,7 @@
     </div>
 
     <!-- 搜索与筛选：按 订单号、创建时间、创建人、物流产品、货物属性 排列，标签在控件左上角 -->
-    <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-4 mb-6">
+    <div class="page-card page-card-padding-tight mb-6">
       <div class="flex flex-wrap items-end gap-3 mb-4">
         <div class="filter-field">
           <span class="filter-field__label">订单号</span>
@@ -64,7 +64,7 @@
         <el-button @click="resetSearch">重置</el-button>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <el-button size="small">复制</el-button>
+        <el-button size="small" :disabled="selectedRows.length !== 1" :loading="copyLoading" @click="handleCopyOrder">复制</el-button>
         <el-button size="small">重新计费</el-button>
         <el-button size="small" :disabled="selectedRows.length === 0" :loading="printBoxLabelLoading" @click="handlePrintBoxLabels">打印箱唛</el-button>
         <el-button size="small">统计装柜</el-button>
@@ -92,11 +92,20 @@
     </div>
 
     <!-- 表格：横向可滚动，占满宽度 -->
-    <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden w-full">
+    <div class="table-card">
       <div class="responsive-table-container">
         <el-table ref="tableRef" :data="list" stripe v-loading="loading" style="width: 100%; min-width: 1200px" max-height="500" class="mobile-table-dense mobile-action-buttons" @selection-change="onSelectionChange">
           <el-table-column type="selection" width="40" />
-          <el-table-column prop="orderNo" label="订单号" min-width="100" />
+          <el-table-column prop="orderNo" label="订单号" min-width="100">
+            <template #default="{ row }">
+              <router-link
+                :to="row.orderStatus === 'DRAFT' ? `/line-orders/create?draftId=${row.id}` : `/line-orders/${row.id}`"
+                class="text-primary hover:underline"
+              >
+                {{ row.orderNo || '-' }}
+              </router-link>
+            </template>
+          </el-table-column>
           <el-table-column prop="referenceNo" label="参考号" min-width="80">
             <template #default="{ row }">{{ row.referenceNo || '-' }}</template>
           </el-table-column>
@@ -129,7 +138,7 @@
           <el-table-column label="费用" min-width="160">
             <template #default="{ row }">
               <span v-if="row.totalFee != null && row.totalFee !== ''">{{ formatFee(row) }}</span>
-              <span v-else class="text-gray-400">-</span>
+              <span v-else class="text-slate-400">-</span>
               <template v-if="row.totalFee != null && row.totalFee !== ''">
                 <el-tag v-if="row.feeConfirmed" size="small" type="success" class="ml-1.5">已确认</el-tag>
                 <el-tag v-else size="small" type="warning" class="ml-1.5">未确认</el-tag>
@@ -142,17 +151,29 @@
           <el-table-column label="创建时间" width="140">
             <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
           </el-table-column>
-          <el-table-column label="操作" width="80" fixed="right">
+          <el-table-column label="操作" width="100" fixed="right">
             <template #default="{ row }">
-              <router-link :to="`/line-orders/${row.id}`" class="text-primary">查看</router-link>
+              <!-- 草稿：编辑 + 删除 -->
+              <template v-if="row.orderStatus === 'DRAFT'">
+                <router-link :to="`/line-orders/create?draftId=${row.id}`" class="inline-flex text-slate-500 hover:text-primary mr-2" title="编辑">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </router-link>
+                <el-button type="danger" link class="p-0 min-w-0 inline-flex text-red-500 hover:text-red-600" title="删除" @click="handleDeleteDraft(row)">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </el-button>
+              </template>
+              <!-- 非草稿：查看详情 -->
+              <router-link v-else :to="`/line-orders/${row.id}`" class="text-slate-500 hover:text-primary inline-flex">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 30 14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </router-link>
             </template>
           </el-table-column>
         </el-table>
       </div>
       <!-- 分页区：每页条数 + 分页 -->
-      <div class="w-full px-4 py-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
+      <div class="pagination-bar">
           <div class="flex items-center gap-2">
-            <span class="text-gray-500">每页显示</span>
+            <span class="text-slate-500">每页显示</span>
             <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1; fetchList()">
               <el-option label="20条" :value="20" />
               <el-option label="50条" :value="50" />
@@ -205,13 +226,16 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { searchLineOrders, printBoxLabels, exportWmsInbound } from '@/api/lineOrders'
-import { searchLogisticsProducts } from '@/api/logisticsProducts'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { searchLineOrders, printBoxLabels, exportWmsInbound, deleteLineOrderDraft, copyLineOrder } from '@/api/lineOrders'
+import { listLogisticsProducts } from '@/api/logisticsProducts'
 
+const router = useRouter()
 const tableRef = ref(null)
 const selectedRows = ref([])
 const printBoxLabelLoading = ref(false)
+const copyLoading = ref(false)
 const showExportWmsDialog = ref(false)
 const exportWmsExpectedDate = ref('')
 const exportWmsLoading = ref(false)
@@ -289,6 +313,48 @@ async function fetchList() {
 
 function onSelectionChange(rows) {
   selectedRows.value = rows || []
+}
+
+async function handleCopyOrder() {
+  const rows = selectedRows.value
+  if (rows.length !== 1) {
+    ElMessage.warning('请勾选一条订单后再复制')
+    return
+  }
+  const id = rows[0].id
+  if (id == null) {
+    ElMessage.warning('所选订单无效')
+    return
+  }
+  copyLoading.value = true
+  try {
+    const newId = await copyLineOrder(id)
+    ElMessage.success('复制成功')
+    await fetchList()
+    if (newId != null) {
+      router.push(`/line-orders/${newId}`)
+    }
+  } catch (e) {
+    ElMessage.error(e?.message || '复制失败')
+  } finally {
+    copyLoading.value = false
+  }
+}
+
+async function handleDeleteDraft(row) {
+  try {
+    await ElMessageBox.confirm(`确定删除草稿订单「${row.orderNo || row.id}」吗？`, '删除确认', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      customClass: 'oms-message-box',
+    })
+    await deleteLineOrderDraft(row.id)
+    ElMessage.success('已删除')
+    await fetchList()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e?.message || '删除失败')
+  }
 }
 
 async function handlePrintBoxLabels() {
@@ -402,8 +468,8 @@ function resetSearch() {
 }
 
 onMounted(() => {
-  searchLogisticsProducts({ size: 500 }).then((r) => {
-    logisticsProducts.value = r.items || []
+  listLogisticsProducts().then((r) => {
+    logisticsProducts.value = Array.isArray(r) ? r : []
   })
   fetchList()
 })

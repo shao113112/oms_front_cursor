@@ -1,5 +1,12 @@
 import { request } from './request'
 
+/** 下拉用：不分页，返回数组 */
+export function listPickupAddresses(params = {}) {
+  return request
+    .post('/pickupAddresses/list', params || {})
+    .then((res) => res.data?.data ?? [])
+}
+
 /** 后端 PageBean: { page, size, total, totalPage, items } */
 export function searchPickupAddresses(params = {}) {
   return request

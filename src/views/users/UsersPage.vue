@@ -1,14 +1,14 @@
 <template>
-  <div class="w-full min-w-0">
+  <div class="page-wrap">
     <div class="mb-6">
-      <h1 class="text-xl font-bold text-gray-800">用户权限管理</h1>
-      <p class="text-sm text-gray-500 mt-1">管理系统用户及其角色权限</p>
+      <h1 class="page-title">用户权限管理</h1>
+      <p class="page-subtitle">管理系统用户及其角色权限</p>
     </div>
     <div class="space-y-6">
       <el-input v-model="searchKeyword" placeholder="搜索用户邮箱或姓名..." class="max-w-md" clearable />
 
-      <div class="flex flex-wrap items-center gap-3 p-4 bg-white rounded-2xl shadow-soft border border-slate-200/80">
-        <span class="text-sm text-gray-600">为用户分配角色</span>
+      <div class="page-card page-card-padding-tight flex flex-wrap items-center gap-3">
+        <span class="text-sm text-slate-600">为用户分配角色</span>
         <el-select v-model="assignUser" placeholder="选择用户" clearable style="width: 180px">
           <el-option v-for="u in list" :key="u.id" :label="(u.name || u.username) + ' (' + u.email + ')'" :value="u.id" />
         </el-select>
@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden">
+    <div class="table-card">
       <div class="responsive-table-container">
         <el-table :data="filteredUsers" stripe v-loading="loading" class="mobile-table-dense mobile-action-buttons">
           <el-table-column prop="name" label="用户名" width="120">

@@ -1,5 +1,12 @@
 import { request } from './request'
 
+/** 下拉用：不分页，返回数组 */
+export function listReceiveAddresses(params = {}) {
+  return request
+    .post('/receiveAddresses/list', params || {})
+    .then((res) => res.data?.data ?? [])
+}
+
 /** 后端收货地址(收件信息) PageBean */
 export function searchReceiveAddresses(params = {}) {
   return request

@@ -1,5 +1,10 @@
 import { request } from './request'
 
+/** 获取新建专线订单号（用于创建页展示及箱号前缀 orderNo_001） */
+export function getNewLineOrderNo() {
+  return request.post('/lineOrders/getNewOrderNo').then((res) => res.data?.data ?? '')
+}
+
 /** 后端 PageBean: { page, size, total, totalPage, items } */
 export function searchLineOrders(params = {}) {
   const createTime = params.createTime
@@ -21,11 +26,34 @@ export function searchLineOrders(params = {}) {
 /**
  * 创建专线订单
  * @param payload { order: LineOrderCreate, boxes: LineOrderBoxItem[] }
- * LineOrderBoxItem = { box: LineOrderBox, goods: LineOrderBoxGoods[] }
  */
 export function createLineOrder(payload) {
   return request
     .post('/lineOrders/create', payload)
+    .then((res) => res.data?.data)
+}
+
+/**
+ * 保存专线订单草稿（新建时步骤 3 的「保存草稿」）
+ * @param payload 同 createLineOrder
+ */
+export function createLineOrderDraft(payload) {
+  return request
+    .post('/lineOrders/draft', payload)
+    .then((res) => res.data?.data)
+}
+
+/** 删除草稿订单（仅 DRAFT 可删） */
+export function deleteLineOrderDraft(id) {
+  return request
+    .post('/lineOrders/deleteDraft', { id: id != null ? Number(id) : undefined })
+    .then(() => {})
+}
+
+/** 复制订单：根据订单 id 复制生成新订单，返回新订单 id */
+export function copyLineOrder(id) {
+  return request
+    .post('/lineOrders/copyOrder', { id: id != null ? Number(id) : undefined })
     .then((res) => res.data?.data)
 }
 

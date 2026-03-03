@@ -1,5 +1,10 @@
 import { request } from './request'
 
+/** 获取新建整柜订单号（用于创建页展示，提交后系统生成该单号） */
+export function getNewContainerOrderNo() {
+  return request.post('/containerOrders/getNewOrderNo').then((res) => res.data?.data ?? '')
+}
+
 /**
  * 分页查询整柜订单列表
  * @param params { page, size, orderNo }

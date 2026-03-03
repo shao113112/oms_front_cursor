@@ -44,7 +44,7 @@
               <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
               <span class="text-sm">整柜订单</span>
             </router-link>
-            <el-dropdown trigger="click" class="ml-0.5" @command="handleSettingCommand">
+            <el-dropdown ref="settingDropdownRef" trigger="click" class="ml-0.5">
               <span
                 class="flex flex-col items-center justify-center px-4 py-2 rounded min-w-[4rem] cursor-pointer hover:bg-white/10 text-white"
                 :class="isActive('/users') || isActive('/logistics-products') || isActive('/pricing-rules') || isActive('/shipping-addresses') || isActive('/pickup-addresses') ? 'bg-white/10' : ''"
@@ -54,11 +54,13 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="users">用户管理</el-dropdown-item>
-                  <el-dropdown-item command="logistics-products">物流产品</el-dropdown-item>
-                  <el-dropdown-item command="pricing-rules">通用报价</el-dropdown-item>
-                  <el-dropdown-item command="shipping-addresses">收件信息</el-dropdown-item>
-                  <el-dropdown-item command="pickup-addresses">提货地址</el-dropdown-item>
+                  <el-dropdown-item
+                    v-for="item in settingMenuItems"
+                    :key="item.path"
+                    @click="goToSetting(item.path)"
+                  >
+                    {{ item.label }}
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -79,13 +81,13 @@
     <el-drawer v-model="mobileMenuOpen" direction="ltr" size="280px" title="菜单" append-to-body>
       <nav class="flex flex-col gap-1 px-2">
         <router-link to="/" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">
-          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
           仪表盘
         </router-link>
         <router-link to="/line-orders" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">专线订单</router-link>
         <router-link to="/container-orders" class="px-3 py-2.5 rounded-lg hover:bg-slate-100 flex items-center gap-2" @click="mobileMenuOpen = false">整柜订单</router-link>
         <div class="border-t pt-2 mt-2">
-          <p class="px-3 py-1 text-sm text-gray-500">系统设置</p>
+          <p class="px-3 py-1 text-sm text-slate-500">系统设置</p>
           <router-link to="/pickup-addresses" class="block px-3 py-2.5 rounded-lg hover:bg-slate-100" @click="mobileMenuOpen = false">提货地址</router-link>
           <router-link to="/shipping-addresses" class="block px-3 py-2.5 rounded-lg hover:bg-slate-100" @click="mobileMenuOpen = false">收件信息</router-link>
           <router-link to="/logistics-products" class="block px-3 py-2.5 rounded-lg hover:bg-slate-100" @click="mobileMenuOpen = false">物流产品</router-link>
@@ -109,7 +111,16 @@ import { getCurrentUser, logout as apiLogout } from '@/api/auth'
 const router = useRouter()
 const route = useRoute()
 const mobileMenuOpen = ref(false)
+const settingDropdownRef = ref(null)
 const currentUser = ref(getCurrentUser())
+
+const settingMenuItems = [
+  { path: '/users', label: '用户管理' },
+  { path: '/logistics-products', label: '物流产品' },
+  { path: '/pricing-rules', label: '通用报价' },
+  { path: '/shipping-addresses', label: '收件信息' },
+  { path: '/pickup-addresses', label: '提货地址' },
+]
 
 watch(() => route.path, () => {
   currentUser.value = getCurrentUser()
@@ -125,7 +136,8 @@ async function handleLogout() {
   currentUser.value = null
   router.push('/auth')
 }
-function handleSettingCommand(command) {
-  router.push(`/${command}`)
+function goToSetting(path) {
+  router.push(path)
+  settingDropdownRef.value?.handleClose?.()
 }
 </script>

@@ -1,16 +1,16 @@
 <template>
-  <div class="w-full min-w-0">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <h1 class="text-xl font-bold text-gray-800">物流产品管理</h1>
+  <div class="page-wrap">
+    <div class="page-title-row">
+      <h1 class="page-title">物流产品管理</h1>
       <el-button type="primary" @click="openDialog()">+ 添加产品</el-button>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden">
+    <div class="table-card">
       <el-table :data="list" stripe v-loading="loading">
         <el-table-column label="排序" width="80" align="center">
           <template #default>
-            <span class="text-gray-400 cursor-pointer">↑</span>
-            <span class="text-gray-400 cursor-pointer ml-1">↓</span>
+            <span class="text-slate-400 cursor-pointer">↑</span>
+            <span class="text-slate-400 cursor-pointer ml-1">↓</span>
           </template>
         </el-table-column>
         <el-table-column prop="name" label="产品名称" min-width="160" />
@@ -19,7 +19,7 @@
         <el-table-column prop="remark" label="产品备注" width="100" />
         <el-table-column prop="enabledStatus" label="状态" width="80">
           <template #default="{ row }">
-            <span :class="row.enabledStatus === 'AVAILABLE' ? 'text-green-600' : 'text-gray-500'">{{ row.enabledStatus === 'AVAILABLE' ? '启用' : '停用' }}</span>
+            <span :class="row.enabledStatus === 'AVAILABLE' ? 'text-green-600' : 'text-slate-500'">{{ row.enabledStatus === 'AVAILABLE' ? '启用' : '停用' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="160" />
@@ -144,6 +144,18 @@ function resetForm() {
 }
 
 async function submitForm() {
+  if (!(form.name != null && String(form.name).trim())) {
+    ElMessage.warning('请输入产品名称')
+    return
+  }
+  if (!(form.transportMethod != null && String(form.transportMethod).trim())) {
+    ElMessage.warning('请选择运输方式')
+    return
+  }
+  if (!(form.cargoType != null && String(form.cargoType).trim())) {
+    ElMessage.warning('请选择货物类型')
+    return
+  }
   saving.value = true
   try {
     if (editingId.value) {

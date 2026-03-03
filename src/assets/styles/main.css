@@ -49,12 +49,33 @@ body {
 }
 
 .responsive-table-container::-webkit-scrollbar-track {
-  @apply bg-gray-100 rounded;
+  @apply bg-slate-100 rounded;
 }
 
 .responsive-table-container::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded hover:bg-gray-400;
+  @apply bg-slate-300 rounded hover:bg-slate-400;
 }
+
+/* ========== 统一 UI 规范（仅样式，供各页面复用） ========== */
+.page-wrap { @apply w-full min-w-0; }
+.page-title-row { @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6; }
+.page-title { @apply text-xl font-bold text-slate-800 tracking-tight; }
+.page-subtitle { @apply text-sm text-slate-500 mt-1; }
+.page-card { @apply bg-white rounded-2xl shadow-soft border border-slate-200/80; }
+.page-card-padding { @apply p-6; }
+.page-card-padding-tight { @apply p-4; }
+.section-title { @apply text-base font-semibold text-slate-800 mb-4; }
+.info-label { @apply text-slate-500 block mb-0.5; }
+.info-value { @apply text-slate-800; }
+.table-card { @apply bg-white rounded-2xl shadow-soft border border-slate-200/80 overflow-hidden w-full; }
+.pagination-bar { @apply w-full px-4 py-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500; }
+.btn-primary-main { @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-dark shrink-0; }
+.link-back { @apply inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 text-sm; }
+.tag-default { @apply px-2 py-0.5 rounded text-sm bg-slate-100 text-slate-700; }
+.divider-vertical { @apply inline-block w-px h-5 bg-slate-200; }
+.filter-field-label { @apply text-sm text-slate-500 block mb-0.5; }
+.form-block-inner { @apply border border-slate-200 rounded-lg p-4; }
+.form-block-inner-xl { @apply border border-slate-200 rounded-xl p-4; }
 
 /* 移动端表格优化 */
 @media (max-width: 768px) {
