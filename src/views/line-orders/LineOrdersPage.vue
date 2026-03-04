@@ -323,9 +323,9 @@ function formatNum(v) {
 
 function formatFee(row) {
   const fee = row.totalFee != null ? Number(row.totalFee) : null
-  const cur = row.feeCurrency || 'USD'
+  const cur = row.feeCurrency || ''
   if (fee == null || isNaN(fee)) return '-'
-  return (cur === 'USD' ? '$' : '') + fee.toFixed(2)
+  return fee.toFixed(2) + ' ' + cur
 }
 
 function formatDate(v) {
