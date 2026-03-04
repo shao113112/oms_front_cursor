@@ -77,7 +77,30 @@ npm run build
 node node_modules/vite/bin/vite.js build
 ```
 
-## 7. 简要检查清单
+## 7. 服务器构建出现 Bus error (core dumped)
+
+该错误常见于服务器内存不足或 Node 与 CPU 架构不匹配。已做两处处理：
+
+**方案 A：提高 Node 内存上限（已写入 build 脚本）**
+
+构建命令已加上 `--max-old-space-size=4096`（约 4GB）。若服务器内存较小，可改为 2048 或 1024，在 `package.json` 的 `build` 脚本里修改该数字后重试。
+
+**方案 B：在本地或 CI 构建，只部署 dist（推荐）**
+
+不在服务器上执行 `npm run build`，改为：
+
+1. 在**本机**或 **CI 环境**执行 `npm ci` 和 `npm run build`；
+2. 将生成的 **`dist/` 目录**整体上传到服务器（如 `/var/www/oms-front`）；
+3. Nginx 的 `root` 指向该目录即可。
+
+这样服务器只需提供静态文件和反向代理，无需安装 Node、无需在服务器上构建，可避免 Bus error 和内存不足问题。
+
+**可选：检查服务器环境**
+
+- 运行 `node -v` 确认 Node 版本（建议 18+ 或 20 LTS）；
+- 运行 `node -p "process.arch"` 确认架构（如 x64、arm64）与 Node 安装包一致。
+
+## 8. 简要检查清单
 
 - [ ] 已执行 `npm run build`，无报错
 - [ ] 已配置 `.env.production` 中的 `VITE_API_BASE`
