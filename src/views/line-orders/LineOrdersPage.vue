@@ -73,7 +73,17 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <el-button size="small">列设置</el-button>
+        <el-popover placement="bottom-end" :width="220" trigger="click">
+          <template #reference>
+            <el-button size="small">列设置</el-button>
+          </template>
+          <div class="text-sm font-medium text-slate-700 mb-2">显示列</div>
+          <div class="flex flex-col gap-1.5 max-h-64 overflow-y-auto">
+            <el-checkbox v-for="col in columnConfig" :key="col.key" v-model="columnVisible[col.key]">
+              {{ col.label }}
+            </el-checkbox>
+          </div>
+        </el-popover>
       </div>
     </div>
 
@@ -93,7 +103,7 @@
       <div class="responsive-table-container">
         <el-table ref="tableRef" :data="list" stripe v-loading="loading" style="width: 100%; min-width: 1200px" max-height="500" class="mobile-table-dense mobile-action-buttons" @selection-change="onSelectionChange">
           <el-table-column type="selection" width="40" />
-          <el-table-column prop="orderNo" label="订单号" min-width="100">
+          <el-table-column v-if="columnVisible.orderNo" prop="orderNo" label="订单号" min-width="100">
             <template #default="{ row }">
               <router-link
                 :to="row.orderStatus === 'DRAFT' ? `/line-orders/create?draftId=${row.id}` : `/line-orders/${row.id}`"
@@ -103,36 +113,36 @@
               </router-link>
             </template>
           </el-table-column>
-          <el-table-column prop="referenceNo" label="参考号" min-width="80">
+          <el-table-column v-if="columnVisible.referenceNo" prop="referenceNo" label="参考号" min-width="80">
             <template #default="{ row }">{{ row.referenceNo || '-' }}</template>
           </el-table-column>
-          <el-table-column label="集货仓" min-width="90">
+          <el-table-column v-if="columnVisible.warehouse" label="集货仓" min-width="90">
             <template #default="{ row }">{{ row.warehouseId ?? '-' }}</template>
           </el-table-column>
-          <el-table-column prop="cargoType" label="货物属性" min-width="80">
+          <el-table-column v-if="columnVisible.cargoType" prop="cargoType" label="货物属性" min-width="80">
             <template #default="{ row }">{{ row.cargoType || '-' }}</template>
           </el-table-column>
-          <el-table-column label="收件信息" min-width="100">
+          <el-table-column v-if="columnVisible.receiveAddress" label="收件信息" min-width="100">
             <template #default="{ row }">{{ row.receiveAddressId ?? '-' }}</template>
           </el-table-column>
-          <el-table-column prop="boxQty" label="箱数" width="70">
+          <el-table-column v-if="columnVisible.boxQty" prop="boxQty" label="箱数" width="70">
             <template #default="{ row }">{{ row.boxQty ?? 0 }}</template>
           </el-table-column>
-          <el-table-column label="总重量(KG)" width="100">
+          <el-table-column v-if="columnVisible.totalWeight" label="总重量(KG)" width="100">
             <template #default="{ row }">{{ formatNum(row.totalWeight) }}</template>
           </el-table-column>
-          <el-table-column label="总体积(CBM)" width="110">
+          <el-table-column v-if="columnVisible.totalVolume" label="总体积(CBM)" width="110">
             <template #default="{ row }">{{ formatNum(row.totalVolume) }}</template>
           </el-table-column>
-          <el-table-column label="物流产品" min-width="100">
+          <el-table-column v-if="columnVisible.logisticsProduct" label="物流产品" min-width="100">
             <template #default="{ row }">{{ getProductName(row.logisticsProductId) || '-' }}</template>
           </el-table-column>
-          <el-table-column label="状态" width="90">
+          <el-table-column v-if="columnVisible.orderStatus" label="状态" width="90">
             <template #default="{ row }">
-              <el-tag size="small" type="info">{{ orderStatusText(row.orderStatus) || '-' }}</el-tag>
+              <el-tag size="small" :type="orderStatusTagType(row.orderStatus)">{{ orderStatusText(row.orderStatus) || '-' }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="费用" min-width="160">
+          <el-table-column v-if="columnVisible.fee" label="费用" min-width="160">
             <template #default="{ row }">
               <span v-if="row.totalFee != null && row.totalFee !== ''">{{ formatFee(row) }}</span>
               <span v-else class="text-slate-400">-</span>
@@ -142,10 +152,10 @@
               </template>
             </template>
           </el-table-column>
-          <el-table-column prop="creator" label="创建人" width="90">
+          <el-table-column v-if="columnVisible.creator" prop="creator" label="创建人" width="90">
             <template #default="{ row }">{{ row.creator || '-' }}</template>
           </el-table-column>
-          <el-table-column label="创建时间" width="140">
+          <el-table-column v-if="columnVisible.createTime" label="创建时间" width="140">
             <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
           </el-table-column>
           <el-table-column label="操作" width="100" fixed="right" align="center">
@@ -248,6 +258,39 @@ const activeStatus = ref('all')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const logisticsProducts = ref([])
+
+const STORAGE_KEY_COLUMNS = 'line_orders_column_visible'
+const columnConfig = [
+  { key: 'orderNo', label: '订单号' },
+  { key: 'referenceNo', label: '参考号' },
+  { key: 'warehouse', label: '集货仓' },
+  { key: 'cargoType', label: '货物属性' },
+  { key: 'receiveAddress', label: '收件信息' },
+  { key: 'boxQty', label: '箱数' },
+  { key: 'totalWeight', label: '总重量(KG)' },
+  { key: 'totalVolume', label: '总体积(CBM)' },
+  { key: 'logisticsProduct', label: '物流产品' },
+  { key: 'orderStatus', label: '状态' },
+  { key: 'fee', label: '费用' },
+  { key: 'creator', label: '创建人' },
+  { key: 'createTime', label: '创建时间' }
+]
+const defaultColumnVisible = Object.fromEntries(columnConfig.map(c => [c.key, true]))
+function loadColumnVisible() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_COLUMNS)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      return { ...defaultColumnVisible, ...parsed }
+    }
+  } catch (_) {}
+  return { ...defaultColumnVisible }
+}
+const columnVisible = reactive(loadColumnVisible())
+watch(columnVisible, (val) => {
+  try { localStorage.setItem(STORAGE_KEY_COLUMNS, JSON.stringify(val)) } catch (_) {}
+}, { deep: true })
+
 const filters = reactive({
   logisticsProductId: '',
   cargoType: '',
@@ -257,9 +300,14 @@ const filters = reactive({
 })
 
 const orderStatusMap = { DRAFT: '草稿', PENDING: '待处理', TRANSPORTING: '运输中', DELIVERED: '已送达', CANCELLED: '已取消' }
+/** 订单状态对应 el-tag type，用于区分颜色 */
+const orderStatusTagTypeMap = { DRAFT: 'info', PENDING: 'warning', TRANSPORTING: 'primary', DELIVERED: 'success', CANCELLED: 'danger' }
 function orderStatusText(v) {
   if (v == null || v === '') return ''
   return orderStatusMap[v] || (typeof v === 'string' ? v : '')
+}
+function orderStatusTagType(v) {
+  return orderStatusTagTypeMap[v] || 'info'
 }
 
 function formatNum(v) {

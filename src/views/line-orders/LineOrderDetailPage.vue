@@ -24,7 +24,8 @@
         <div class="flex items-start justify-between mb-4">
           <h2 class="section-title mb-0">订单信息</h2>
           <div class="flex flex-wrap items-center gap-2">
-            <span v-for="tag in order.statusTags" :key="tag" class="px-2 py-0.5 rounded text-sm bg-slate-100 text-slate-700">{{ tag }}</span>
+            <el-tag v-if="order.orderStatus" size="small" :type="orderStatusTagType(order.orderStatus)" class="mr-1">{{ orderStatusText[order.orderStatus] || order.orderStatus }}</el-tag>
+            <span v-for="tag in order.statusTags.filter(t => t !== (orderStatusText[order.orderStatus] || order.orderStatus))" :key="tag" class="px-2 py-0.5 rounded text-sm bg-slate-100 text-slate-700">{{ tag }}</span>
             <el-tag v-if="order.feeConfirmed" size="small" type="success">费用已确认</el-tag>
             <el-tag v-else size="small" type="warning">费用未确认</el-tag>
           </div>
@@ -234,6 +235,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getLineOrderDetail as fetchLineOrderDetail, addLineOrderFee, updateLineOrderFee, deleteLineOrderFee, confirmLineOrderFee, updateLineOrderBoxBilling } from '@/api/lineOrders'
 
 const orderStatusText = { DRAFT: '草稿', PENDING: '待处理', TRANSPORTING: '运输中', DELIVERED: '已送达', CANCELLED: '已取消' }
+const orderStatusTagTypeMap = { DRAFT: 'info', PENDING: 'warning', TRANSPORTING: 'primary', DELIVERED: 'success', CANCELLED: 'danger' }
+function orderStatusTagType(v) { return orderStatusTagTypeMap[v] || 'info' }
 
 const route = useRoute()
 const order = ref(null)

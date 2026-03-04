@@ -7,7 +7,7 @@
         </router-link>
         <div class="flex items-center gap-3">
           <h1 class="text-xl font-bold text-slate-800">整柜订单详情</h1>
-          <span class="px-2 py-0.5 rounded text-sm bg-slate-100 text-slate-700">{{ orderStatusText[detail.order?.orderStatus] || detail.order?.orderStatus || '-' }}</span>
+          <el-tag size="small" :type="getOrderStatusTagType(detail.order?.orderStatus)">{{ orderStatusText[detail.order?.orderStatus] || detail.order?.orderStatus || '-' }}</el-tag>
         </div>
       </div>
 
@@ -102,6 +102,8 @@ import { ElMessage } from 'element-plus'
 import { getContainerOrderDetail } from '@/api/containerOrders'
 
 const orderStatusText = { DRAFT: '草稿', PENDING: '待处理', TRANSPORTING: '运输中', DELIVERED: '已送达', CANCELLED: '已取消' }
+const orderStatusTagType = { DRAFT: 'info', PENDING: 'warning', TRANSPORTING: 'primary', DELIVERED: 'success', CANCELLED: 'danger' }
+function getOrderStatusTagType(v) { return orderStatusTagType[v] || 'info' }
 
 const route = useRoute()
 const loading = ref(true)

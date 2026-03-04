@@ -49,7 +49,7 @@
           </el-table-column>
           <el-table-column label="状态" width="100">
             <template #default="{ row }">
-              <span class="text-primary font-medium">{{ orderStatusText[row.orderStatus] || row.orderStatus || '-' }}</span>
+              <el-tag size="small" :type="getOrderStatusTagType(row.orderStatus)">{{ orderStatusText[row.orderStatus] || row.orderStatus || '-' }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="备注" min-width="120" show-overflow-tooltip>
@@ -99,6 +99,8 @@ import { ElMessage } from 'element-plus'
 import { searchContainerOrders } from '@/api/containerOrders'
 
 const orderStatusText = { DRAFT: '草稿', PENDING: '待处理', TRANSPORTING: '运输中', DELIVERED: '已送达', CANCELLED: '已取消' }
+const orderStatusTagType = { DRAFT: 'info', PENDING: 'warning', TRANSPORTING: 'primary', DELIVERED: 'success', CANCELLED: 'danger' }
+function getOrderStatusTagType(v) { return orderStatusTagType[v] || 'info' }
 
 const loading = ref(false)
 const searchKeyword = ref('')
