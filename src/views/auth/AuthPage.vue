@@ -1,13 +1,9 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-dark to-header p-4">
     <div class="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-soft-lg border border-white/20 p-8">
-      <!-- Logo -->
+      <!-- Logo：与主站统一使用透明 PNG -->
       <div class="flex justify-center mb-5">
-        <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-glow">
-          <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18l6.9 3.45L12 11.09 5.1 7.63 12 4.18zM4 8.82l7 3.5v7.36l-7-3.5V8.82zm9 10.86v-7.36l7-3.5v7.36l-7 3.5z"/>
-          </svg>
-        </div>
+        <img src="/login_logo.png" alt="EpochV" class="h-14 w-auto object-contain" />
       </div>
       <h1 class="text-center text-2xl font-bold text-slate-800 tracking-tight">EpochV OMS</h1>
       <p class="text-center text-slate-500 text-sm mt-1.5">专业的物流订单管理平台</p>

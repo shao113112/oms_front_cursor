@@ -3,11 +3,9 @@
     <header class="flex-shrink-0 bg-header text-white shadow-soft">
       <div class="max-w-full mx-auto px-4 h-14 flex items-center justify-between relative">
         <div class="flex items-center gap-6 shrink-0">
-          <!-- Logo：浅蓝图标 + EpochV OMS -->
+          <!-- Logo：与 favicon 统一使用 main_logo.png -->
           <router-link to="/" class="flex items-center gap-2">
-            <svg class="w-8 h-8 text-primary-light" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
+            <img src="/main_logo.png" alt="EpochV" class="h-8 w-8 object-contain" />
             <span class="font-semibold text-lg tracking-tight">EpochV OMS</span>
           </router-link>
           <button
