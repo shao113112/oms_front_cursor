@@ -37,8 +37,10 @@ function handleUnauthorized() {
     }
   }
   ElMessageBox.alert('会话已过期，请重新登录', '提示', {
-    confirmButtonText: '确认',
-    customClass: 'oms-message-box',
+    confirmButtonText: '去登录',
+    type: 'info',
+    customClass: 'oms-message-box oms-message-box--plain',
+    showClose: false,
     callback: () => {
       doRedirect()
     },

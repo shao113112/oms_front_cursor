@@ -214,6 +214,33 @@ body {
   padding-top: 0;
 }
 
+/* 无图标、仅文案的提示弹窗（如会话过期），去掉默认图标与多余留白 */
+.oms-message-box--plain .el-message-box__status,
+.oms-message-box--plain .el-message-box__header .el-message-box__status {
+  display: none !important;
+}
+.oms-message-box--plain .el-message-box__header {
+  padding-left: 0;
+}
+.oms-message-box--plain .el-message-box__title {
+  margin-left: 0;
+  font-size: 16px;
+}
+.oms-message-box--plain .el-message-box__content {
+  padding-left: 0;
+}
+.oms-message-box--plain .el-message-box__btns {
+  justify-content: center;
+}
+
+/* 右上角关闭按钮颜色统一 */
+.el-message-box__headerbtn .el-icon {
+  color: var(--el-text-color-secondary);
+}
+.el-message-box__headerbtn:hover .el-icon {
+  color: var(--el-text-color-primary);
+}
+
 .el-input__wrapper {
   border-radius: 10px;
 }
