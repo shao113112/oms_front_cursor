@@ -117,13 +117,18 @@
             <template #default="{ row }">{{ row.referenceNo || '-' }}</template>
           </el-table-column>
           <el-table-column v-if="columnVisible.warehouse" label="集货仓" min-width="90">
-            <template #default="{ row }">{{ row.warehouseId ?? '-' }}</template>
+            <template #default="{ row }">{{ row.warehouseName ?? '-' }}</template>
           </el-table-column>
           <el-table-column v-if="columnVisible.cargoType" prop="cargoType" label="货物属性" min-width="80">
             <template #default="{ row }">{{ row.cargoType || '-' }}</template>
           </el-table-column>
-          <el-table-column v-if="columnVisible.receiveAddress" label="收件信息" min-width="100">
-            <template #default="{ row }">{{ row.receiveAddressId ?? '-' }}</template>
+          <el-table-column v-if="columnVisible.receiveAddress" label="收件信息" min-width="200">
+            <template #default="{ row }">
+              <div class="flex flex-col gap-0.5 text-sm">
+                <div>{{ row.receiveAddressName ?? '-' }} / {{ row.receiveAddressPhone ?? '-' }}</div>
+                <div class="text-slate-500" :title="row.receiveAddress">{{ row.receiveAddress ?? '-' }}</div>
+              </div>
+            </template>
           </el-table-column>
           <el-table-column v-if="columnVisible.boxQty" prop="boxQty" label="箱数" width="70">
             <template #default="{ row }">{{ row.boxQty ?? 0 }}</template>
@@ -135,7 +140,7 @@
             <template #default="{ row }">{{ formatNum(row.totalVolume) }}</template>
           </el-table-column>
           <el-table-column v-if="columnVisible.logisticsProduct" label="物流产品" min-width="100">
-            <template #default="{ row }">{{ getProductName(row.logisticsProductId) || '-' }}</template>
+            <template #default="{ row }">{{ row.logisticsProductName || '-' }}</template>
           </el-table-column>
           <el-table-column v-if="columnVisible.orderStatus" label="状态" width="90">
             <template #default="{ row }">

@@ -32,9 +32,16 @@
         </div>
         <div class="grid grid-cols-3 gap-x-8 gap-y-4 text-sm">
           <div><span class="text-slate-500 block mb-0.5">订单号</span><div class="text-slate-800">{{ order.orderInfo?.orderNo ?? order.orderNo }}</div></div>
-          <div><span class="text-slate-500 block mb-0.5">物流产品</span><div class="text-slate-800">{{ order.orderInfo?.logisticsProduct ?? order.logisticsProductId ?? '-' }}</div></div>
+          <div><span class="text-slate-500 block mb-0.5">物流产品</span><div class="text-slate-800">{{ order.orderInfo?.logisticsProductName ?? order.logisticsProductName ?? '-' }}</div></div>
           <div><span class="text-slate-500 block mb-0.5">货物属性</span><div class="text-slate-800">{{ order.orderInfo?.cargoType ?? order.cargoType ?? '-' }}</div></div>
-          <div class="col-span-3"><span class="text-slate-500 block mb-0.5">收件信息</span><div class="text-slate-800">{{ order.orderInfo?.recipient ?? order.receiveAddressId ?? '-' }}</div></div>
+          <div class="col-span-3">
+            <span class="text-slate-500 block mb-0.5">收件信息</span>
+            <div class="text-slate-800 flex flex-col gap-0.5">
+              <div>收件人：{{ order.orderInfo?.receiveAddressName ?? order.receiveAddressName ?? '-' }}</div>
+              <div>电话：{{ order.orderInfo?.receiveAddressPhone ?? order.receiveAddressPhone ?? '-' }}</div>
+              <div>地址：{{ order.orderInfo?.receiveAddress ?? order.receiveAddress ?? '-' }}</div>
+            </div>
+          </div>
           <div><span class="text-slate-500 block mb-0.5">总重量(KG)</span><div class="text-slate-800">{{ order.orderInfo?.totalWeight ?? order.totalWeight ?? '-' }}</div></div>
           <div><span class="text-slate-500 block mb-0.5">总体积(CBM)</span><div class="text-slate-800">{{ order.orderInfo?.totalVolume ?? order.totalVolume ?? '-' }}</div></div>
           <div><span class="text-slate-500 block mb-0.5">计费重(KG)</span><div class="text-slate-800">{{ order.orderInfo?.billingWeight ?? order.billingWeight ?? '-' }}</div></div>
@@ -310,7 +317,9 @@ function normalizeDetail(data) {
     orderInfo: {
       orderNo: o.orderNo,
       logisticsProduct: o.logisticsProductId,
-      recipient: o.receiveAddressId,
+      receiveAddressName: o.receiveAddressName,
+      receiveAddressPhone: o.receiveAddressPhone,
+      receiveAddress: o.receiveAddress,
       cargoType: o.cargoType,
       totalWeight: o.totalWeight,
       billingVolume: o.billingVolume,

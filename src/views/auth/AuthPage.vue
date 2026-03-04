@@ -144,12 +144,11 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useFormValidation } from '@/composables/useFormValidation'
 import { login as apiLogin, register as apiRegister } from '@/api/auth'
 
 const router = useRouter()
-const route = useRoute()
 const activeTab = ref('login')
 const registerSuccessTip = ref('')
 
@@ -190,8 +189,7 @@ async function handleLogin() {
   clearErrors()
   try {
     await apiLogin({ email: loginForm.email, password: loginForm.password })
-    const redirect = route.query.redirect || '/'
-    router.push(redirect)
+    router.push('/')
   } catch (e) {
     showApiError(e.message || '登录失败', 'password')
   } finally {
