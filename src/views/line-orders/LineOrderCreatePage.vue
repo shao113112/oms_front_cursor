@@ -269,11 +269,25 @@
               <el-input v-model="item.singleWeight" placeholder="请输入单品重量" />
             </div>
             <div class="sm:col-span-3">
-              <label class="block text-sm font-medium text-slate-700 mb-1">商品图片 <span class="text-red-500">*</span></label>
+              <div class="flex items-center gap-2 mb-1">
+                <label class="text-sm font-medium text-slate-700">商品图片 <span class="text-red-500">*</span></label>
+                <el-button size="small" @click="openImageLibrary(bi, ii)">图片库</el-button>
+              </div>
               <div class="flex flex-wrap items-center gap-3">
-                <el-button size="small">选择文件</el-button>
-                <span class="text-sm text-slate-500">未选择任何文件</span>
-                <el-button size="small">图片库</el-button>
+                <el-upload
+                  :show-file-list="false"
+                  :http-request="(opt) => handleUploadImage(opt, box, item)"
+                  accept=".jpg,.jpeg,.png,.webp"
+                >
+                  <el-button size="small">选择文件</el-button>
+                </el-upload>
+                <template v-if="item.imageUrl">
+                  <div class="relative inline-block">
+                    <img :src="item.imageUrl" alt="商品图" class="w-20 h-20 object-cover rounded-lg border border-slate-200" />
+                    <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-slate-700 text-white text-xs flex items-center justify-center cursor-pointer hover:bg-red-500" @click="item.imageUrl = ''; item.imageId = null" title="移除">×</span>
+                  </div>
+                </template>
+                <span v-else class="text-sm text-slate-500">未选择任何文件</span>
               </div>
               <p class="text-xs text-slate-500 mt-1.5">支持格式:JPG、PNG、WEBP | 尺寸要求:最小480×480像素,最大1024×1024像素 | 文件大小不超过1MB</p>
             </div>
@@ -316,13 +330,78 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 图片库弹窗：搜索、日期、网格、大图/选定 -->
+    <el-dialog
+      v-model="showImageLibrary"
+      title="图片库"
+      width="900px"
+      destroy-on-close
+      class="image-library-dialog"
+      @open="onImageLibraryOpen"
+    >
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <el-input
+            v-model="imageLibraryKeyword"
+            placeholder="搜索图片标题 (商品名称、英文品名、编码、材质)"
+            clearable
+            style="max-width: 360px"
+            @keyup.enter="searchImageLibrary"
+          />
+          <el-date-picker
+            v-model="imageLibraryDate"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="年/月/日"
+            clearable
+            style="width: 160px"
+          />
+          <el-button type="primary" @click="searchImageLibrary">搜索</el-button>
+        </div>
+        <div v-loading="imageLibraryLoading" class="min-h-[280px]">
+          <div v-if="imageLibraryList.length === 0 && !imageLibraryLoading" class="text-center py-12 text-slate-500">暂无图片</div>
+          <div v-else class="grid grid-cols-3 sm:grid-cols-4 gap-4">
+            <div
+              v-for="img in imageLibraryList"
+              :key="img.id"
+              class="image-library-card rounded-lg border border-slate-200 overflow-hidden bg-slate-50 group"
+            >
+              <div class="aspect-square relative bg-slate-100">
+                <img :src="getImageDisplayUrl(img)" :alt="img.title || img.productName" class="w-full h-full object-contain" />
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 flex-wrap">
+                  <el-button size="small" @click="previewImage(img)">大图</el-button>
+                  <el-button type="primary" size="small" @click="selectImageFromLibrary(img)">选定</el-button>
+                  <el-button type="danger" size="small" @click="handleDeleteImage(img)">删除</el-button>
+                </div>
+              </div>
+              <div class="p-2 text-xs text-slate-600 truncate" :title="imageLibraryCardTitle(img)">{{ imageLibraryCardTitle(img) }}</div>
+              <div class="px-2 pb-2 text-xs text-slate-400">{{ formatImageLibraryTime(img.createTime) }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-center pt-2">
+          <el-pagination
+            v-model:current-page="imageLibraryPage"
+            :page-size="imageLibraryPageSize"
+            :total="imageLibraryTotal"
+            layout="prev, pager, next"
+            small
+            @current-change="searchImageLibrary"
+          />
+        </div>
+      </div>
+    </el-dialog>
+    <el-dialog :model-value="!!previewImageUrl" title="大图" width="80%" top="5vh" append-to-body @close="previewImageUrl = ''">
+      <img v-if="previewImageUrl" :src="previewImageUrl" alt="预览" class="w-full h-auto max-h-[70vh] object-contain" />
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { listLogisticsProductPrices } from '@/api/logisticsProductPrices'
 import { listReceiveAddresses } from '@/api/receiveAddresses'
 import { listWarehouses } from '@/api/warehouses'
@@ -333,6 +412,7 @@ import {
   getLineOrderDetail,
 } from '@/api/lineOrders'
 import { listLogisticsProducts } from '@/api/logisticsProducts'
+import { uploadFile, searchImages, deleteFileById } from '@/api/file'
 
 /** 货物属性两层：普货 / 特货 及其子项（参考 cargoTypeSelect.png） */
 const cargoTypePuHuo = ['毛巾', '鞋子', '服装', '日用品', '家具(不含木)', '插电的小家电', '家居装饰品', '五金配件', '塑料制品', '无内置或外接电池', '无IC', '无磁', '无电机', '无液体', '无粉末', '无食品', '无品牌或仿牌', '赝金属饰品', '电机(小型)', '木制品(5方内)']
@@ -345,7 +425,19 @@ const draftOrderId = ref(route.query.draftId ? String(route.query.draftId) : '')
 const step = ref(1)
 const stepTitles = ['订单基本信息', '箱信息', '商品信息']
 const showProductModal = ref(false)
+const showImageLibrary = ref(false)
 const cargoTypePopoverVisible = ref(false)
+/** 图片库：当前要为哪个商品选图 (boxIndex, itemIndex) */
+const imageLibraryTarget = ref({ boxIndex: 0, itemIndex: 0 })
+const imageLibraryKeyword = ref('')
+const imageLibraryDate = ref('')
+const imageLibraryPage = ref(1)
+const imageLibraryPageSize = ref(12)
+const imageLibraryList = ref([])
+const imageLibraryTotal = ref(0)
+const imageLibraryLoading = ref(false)
+const previewImageUrl = ref('')
+const uploadImageLoading = ref(false)
 const saving = ref(false)
 const shippingAddressesList = ref([])
 const logisticsProductPrices = ref([])
@@ -384,6 +476,8 @@ const form = reactive({
         declaredPrice: '',
         declaredCurrency: 'USD',
         singleWeight: '',
+        imageUrl: '',
+        imageId: null,
       }],
     },
   ],
@@ -474,6 +568,8 @@ function getStep3Error() {
       if (price === '' || price == null) return `箱 #${box.boxNo || bi + 1} 商品 #${ii + 1}：请填写申报价`
       const pNum = Number(price)
       if (isNaN(pNum) || pNum < 0) return `箱 #${box.boxNo || bi + 1} 商品 #${ii + 1}：请填写有效申报价`
+      const imgUrl = (item.imageUrl != null && String(item.imageUrl).trim()) || ''
+      if (!imgUrl) return `箱 #${box.boxNo || bi + 1} 商品 #${ii + 1}：请上传或从图片库选择商品图片`
     }
   }
   return ''
@@ -580,6 +676,8 @@ function addItem(box) {
     declaredPrice: '',
     declaredCurrency: 'USD',
     singleWeight: '',
+    imageUrl: '',
+    imageId: null,
   })
 }
 
@@ -616,6 +714,8 @@ function buildPayload(orderStatus) {
       declaredPrice: item.declaredPrice != null && item.declaredPrice !== '' ? Number(item.declaredPrice) : null,
       declaredCurrency: item.declaredCurrency,
       unitWeight: item.singleWeight != null && item.singleWeight !== '' ? Number(item.singleWeight) : null,
+      imageUrl: item.imageUrl || undefined,
+      imageId: item.imageId ?? undefined,
     }))
     return { box: boxPayload, goods }
   })
@@ -725,6 +825,8 @@ function fillFormFromDraft(detail) {
             declaredPrice: g.declaredPrice != null ? String(g.declaredPrice) : '',
             declaredCurrency: g.declaredCurrency ?? 'USD',
             singleWeight: g.unitWeight != null ? String(g.unitWeight) : '',
+            imageUrl: g.imageUrl ?? g.goodsImageUrl ?? '',
+            imageId: g.imageId ?? g.goodsImageId ?? null,
           }))
         : [
             {
@@ -740,6 +842,8 @@ function fillFormFromDraft(detail) {
               declaredPrice: '',
               declaredCurrency: 'USD',
               singleWeight: '',
+              imageUrl: '',
+              imageId: null,
             },
           ],
     }
@@ -769,12 +873,136 @@ function fillFormFromDraft(detail) {
             declaredPrice: '',
             declaredCurrency: 'USD',
             singleWeight: '',
+            imageUrl: '',
+            imageId: null,
           },
         ],
       },
     ]
   }
   step.value = 1
+}
+
+/** 图片库与上传 */
+function openImageLibrary(boxIndex, itemIndex) {
+  imageLibraryTarget.value = { boxIndex, itemIndex }
+  imageLibraryKeyword.value = ''
+  imageLibraryDate.value = ''
+  imageLibraryPage.value = 1
+  showImageLibrary.value = true
+}
+
+function onImageLibraryOpen() {
+  searchImageLibrary()
+}
+
+async function searchImageLibrary() {
+  imageLibraryLoading.value = true
+  try {
+    const createTime = imageLibraryDate.value ? [imageLibraryDate.value, imageLibraryDate.value] : undefined
+    const res = await searchImages({
+      keyword: imageLibraryKeyword.value || undefined,
+      createTime,
+      page: imageLibraryPage.value,
+      size: imageLibraryPageSize.value,
+    })
+    imageLibraryList.value = res.items ?? []
+    imageLibraryTotal.value = res.total ?? 0
+  } catch (e) {
+    ElMessage.error(e?.message || '加载图片库失败')
+    imageLibraryList.value = []
+    imageLibraryTotal.value = 0
+  } finally {
+    imageLibraryLoading.value = false
+  }
+}
+
+/** 兼容后端返回的图片地址字段：url / imageUrl / fileUrl / path */
+function getImageDisplayUrl(img) {
+  if (!img) return ''
+  return img.url ?? img.imageUrl ?? img.fileUrl ?? img.path ?? ''
+}
+
+function imageLibraryCardTitle(img) {
+  const parts = [img.fileName ?? ''].filter(Boolean)
+  return parts.join('-') || '未命名'
+}
+
+function formatImageLibraryTime(t) {
+  if (!t) return '-'
+  try {
+    const d = typeof t === 'string' ? new Date(t) : t
+    return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return String(t)
+  }
+}
+
+function previewImage(img) {
+  const url = getImageDisplayUrl(img)
+  if (url) previewImageUrl.value = url
+}
+
+function selectImageFromLibrary(img) {
+  const target = imageLibraryTarget.value
+  const box = form.boxes[target.boxIndex]
+  const item = box?.items?.[target.itemIndex]
+  if (item) {
+    item.imageUrl = getImageDisplayUrl(img)
+    item.imageId = img.id ?? null
+    showImageLibrary.value = false
+    ElMessage.success('已选定图片')
+  }
+}
+
+async function handleDeleteImage(img) {
+  const id = img.id
+  if (id == null) return
+  try {
+    await ElMessageBox.confirm('确定删除该图片吗？', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      customClass: 'oms-message-box',
+      showClose: false,
+    })
+    await deleteFileById(id)
+    ElMessage.success('已删除')
+    await searchImageLibrary()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error(e?.message || '删除失败')
+  }
+}
+
+async function handleUploadImage(opt, box, item) {
+  const file = opt.file
+  if (!file) return
+  const accept = ['.jpg', '.jpeg', '.png', '.webp']
+  const ext = file.name ? file.name.slice(file.name.lastIndexOf('.')).toLowerCase() : ''
+  if (!accept.includes(ext)) {
+    ElMessage.warning('请选择 JPG、PNG 或 WEBP 格式')
+    return
+  }
+  if (file.size > 1024 * 1024) {
+    ElMessage.warning('文件大小不超过 1MB')
+    return
+  }
+  uploadImageLoading.value = true
+  try {
+    const res = await uploadFile(file)
+    const url = res.url ?? res.data?.url ?? res.imageUrl
+    if (url) {
+      item.imageUrl = url
+      item.imageId = res.id ?? res.data?.id ?? null
+      ElMessage.success('上传成功')
+    } else {
+      ElMessage.error('上传失败，未返回图片地址')
+    }
+  } catch (e) {
+    ElMessage.error(e?.message || '上传失败')
+  } finally {
+    uploadImageLoading.value = false
+  }
 }
 
 onMounted(async () => {

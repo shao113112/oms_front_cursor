@@ -220,9 +220,8 @@ async function handleDelete(row) {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
-      center: true,
-      appendTo: document.body,
       customClass: 'oms-message-box',
+      showClose: false,
     })
     await deleteLogisticsProduct(row.id)
     await fetchList()

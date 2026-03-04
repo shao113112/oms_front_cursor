@@ -1,5 +1,15 @@
 import { request } from './request'
 
+/** 格式化为 yyyy-MM-dd HH:mm:ss，用于创建时间查询 */
+function toCreateTimeStr(dateInput, endOfDay = false) {
+  if (!dateInput) return undefined
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return endOfDay ? `${y}-${m}-${day} 23:59:59` : `${y}-${m}-${day} 00:00:00`
+}
+
 /** 获取新建专线订单号（用于创建页展示及箱号前缀 orderNo_001） */
 export function getNewLineOrderNo() {
   return request.post('/lineOrders/getNewOrderNo').then((res) => res.data?.data ?? '')
@@ -14,8 +24,8 @@ export function searchLineOrders(params = {}) {
       size: params.size ?? 20,
       orderNo: params.orderNo || undefined,
       orderStatus: params.orderStatus || undefined,
-      createTimeBegin: createTime?.[0] ? new Date(createTime[0]).toISOString() : undefined,
-      createTimeEnd: createTime?.[1] ? new Date(createTime[1] + 'T23:59:59.999Z').toISOString() : undefined,
+      createTimeBegin: createTime?.[0] ? toCreateTimeStr(createTime[0], false) : undefined,
+      createTimeEnd: createTime?.[1] ? toCreateTimeStr(createTime[1], true) : undefined,
       creator: params.creator || undefined,
       logisticsProductId: params.logisticsProductId || undefined,
       cargoType: params.cargoType || undefined,

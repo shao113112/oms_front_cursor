@@ -401,6 +401,7 @@ async function handleDeleteDraft(row) {
       cancelButtonText: '取消',
       type: 'warning',
       customClass: 'oms-message-box',
+      showClose: false,
     })
     await deleteLineOrderDraft(row.id)
     ElMessage.success('已删除')

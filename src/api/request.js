@@ -16,6 +16,10 @@ request.interceptors.request.use(
     if (token) {
       config.headers.Token = token
     }
+    // FormData 上传时不要带 Content-Type，让浏览器自动生成 multipart/form-data; boundary=xxx，否则后端拿不到 file
+    if (config.data && typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type']
+    }
     return config
   },
   (err) => Promise.reject(err)

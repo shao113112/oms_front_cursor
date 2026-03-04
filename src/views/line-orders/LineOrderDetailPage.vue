@@ -86,7 +86,10 @@
             </thead>
             <tbody class="divide-y divide-slate-200">
               <tr v-for="(item, i) in (box.items || box.goodsList || [])" :key="i">
-                <td class="px-4 py-2 w-12"><div class="w-10 h-10 bg-slate-100 rounded" /></td>
+                <td class="px-4 py-2 w-30">
+                  <img v-if="item.imageUrl || item.goodsImageUrl" :src="item.imageUrl || item.goodsImageUrl" alt="商品图" class="w-12 h-12 object-cover rounded border border-slate-200" />
+                  <div v-else class="w-12 h-12 bg-slate-100 rounded flex items-center justify-center text-slate-400 text-xs">无图</div>
+                </td>
                 <td class="px-4 py-2">{{ item.productName ?? item.goodsName }}</td>
                 <td class="px-4 py-2">{{ item.englishName ?? item.goodsEnglishName }}</td>
                 <td class="px-4 py-2">{{ item.productCode ?? item.goodsCode }}</td>
@@ -297,6 +300,7 @@ function normalizeDetail(data) {
       quantityUnit: g.quantityUnit,
       declaredPrice: g.declaredPrice,
       singleWeight: g.unitWeight,
+      imageUrl: g.imageUrl ?? g.goodsImageUrl ?? '',
     })),
   }))
   const fees = data.fees || []
@@ -438,9 +442,8 @@ async function handleDeleteFee(fee) {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
-      center: true,
-      appendTo: document.body,
       customClass: 'oms-message-box',
+      showClose: false,
     })
   } catch {
     return
@@ -492,9 +495,8 @@ async function handleConfirmFee() {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
-      center: true,
-      appendTo: document.body,
       customClass: 'oms-message-box',
+      showClose: false,
     })
   } catch {
     return
