@@ -79,7 +79,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import {
   searchPickupAddresses,
   createPickupAddress,
@@ -110,7 +110,7 @@ async function fetchList() {
     list.value = (res.items || []).map(mapItem)
     total.value = res.total ?? 0
   } catch (e) {
-    ElMessage.error(e.message || '加载失败')
+    ElNotification({ title: '错误', message: e.message || '加载失败', type: 'error' })
     list.value = []
     total.value = 0
   } finally {
@@ -162,15 +162,15 @@ function resetForm() {
 
 async function submitForm() {
   if (!(form.contact != null && String(form.contact).trim())) {
-    ElMessage.warning('请输入联系人')
+    ElNotification({ title: '提示', message: '请输入联系人', type: 'warning' })
     return
   }
   if (!(form.phone != null && String(form.phone).trim())) {
-    ElMessage.warning('请输入联系方式')
+    ElNotification({ title: '提示', message: '请输入联系方式', type: 'warning' })
     return
   }
   if (!(form.address != null && String(form.address).trim())) {
-    ElMessage.warning('请输入详细地址')
+    ElNotification({ title: '提示', message: '请输入详细地址', type: 'warning' })
     return
   }
   saving.value = true

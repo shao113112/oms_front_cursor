@@ -91,7 +91,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import {
   searchLogisticsProducts,
   createLogisticsProduct,
@@ -130,7 +130,7 @@ async function fetchList() {
     list.value = (res.items || []).map(mapItem)
     total.value = res.total ?? 0
   } catch (e) {
-    ElMessage.error(e.message || '加载失败')
+    ElNotification({ title: '错误', message: e.message || '加载失败', type: 'error' })
     list.value = []
     total.value = 0
   } finally {
@@ -173,15 +173,15 @@ function resetForm() {
 
 async function submitForm() {
   if (!(form.name != null && String(form.name).trim())) {
-    ElMessage.warning('请输入产品名称')
+    ElNotification({ title: '提示', message: '请输入产品名称', type: 'warning' })
     return
   }
   if (!(form.transportMethod != null && String(form.transportMethod).trim())) {
-    ElMessage.warning('请选择运输方式')
+    ElNotification({ title: '提示', message: '请选择运输方式', type: 'warning' })
     return
   }
   if (!(form.cargoType != null && String(form.cargoType).trim())) {
-    ElMessage.warning('请选择货物类型')
+    ElNotification({ title: '提示', message: '请选择货物类型', type: 'warning' })
     return
   }
   saving.value = true
@@ -205,10 +205,10 @@ async function submitForm() {
       })
     }
     await fetchList()
-    ElMessage.success('保存成功')
+    ElNotification({ title: '成功', message: '保存成功', type: 'success' })
     dialogVisible.value = false
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElNotification({ title: '错误', message: e.message || '保存失败', type: 'error' })
   } finally {
     saving.value = false
   }
@@ -225,9 +225,9 @@ async function handleDelete(row) {
     })
     await deleteLogisticsProduct(row.id)
     await fetchList()
-    ElMessage.success('删除成功')
+    ElNotification({ title: '成功', message: '删除成功', type: 'success' })
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+    if (e !== 'cancel') ElNotification({ title: '错误', message: e.message || '删除失败', type: 'error' })
   }
 }
 </script>

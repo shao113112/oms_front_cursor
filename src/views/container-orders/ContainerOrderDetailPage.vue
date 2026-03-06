@@ -98,7 +98,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElNotification } from 'element-plus'
 import { getContainerOrderDetail } from '@/api/containerOrders'
 
 const orderStatusText = { DRAFT: '草稿', PENDING: '待处理', TRANSPORTING: '运输中', DELIVERED: '已送达', CANCELLED: '已取消' }
@@ -152,7 +152,7 @@ onMounted(async () => {
       ? data
       : null
   } catch (e) {
-    ElMessage.error(e?.message || '加载失败')
+    ElNotification({ title: '错误', message: e?.message || '加载失败', type: 'error' })
     detail.value = null
   } finally {
     loading.value = false

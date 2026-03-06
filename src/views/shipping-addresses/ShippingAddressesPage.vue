@@ -72,7 +72,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import {
   searchReceiveAddresses,
   createReceiveAddress,
@@ -104,7 +104,7 @@ async function fetchList() {
     list.value = items.map(mapItem)
     total.value = Number(raw.total) >= 0 ? Number(raw.total) : 0
   } catch (e) {
-    ElMessage.error(e?.message || '加载失败')
+    ElNotification({ title: '错误', message: e?.message || '加载失败', type: 'error' })
     list.value = []
     total.value = 0
   } finally {
@@ -148,15 +148,15 @@ function resetForm() {
 
 async function submitForm() {
   if (!(form.recipient != null && String(form.recipient).trim())) {
-    ElMessage.warning('请输入收件人')
+    ElNotification({ title: '提示', message: '请输入收件人', type: 'warning' })
     return
   }
   if (!(form.contact != null && String(form.contact).trim())) {
-    ElMessage.warning('请输入联系方式')
+    ElNotification({ title: '提示', message: '请输入联系方式', type: 'warning' })
     return
   }
   if (!(form.address != null && String(form.address).trim())) {
-    ElMessage.warning('请输入详细地址')
+    ElNotification({ title: '提示', message: '请输入详细地址', type: 'warning' })
     return
   }
   saving.value = true
@@ -188,10 +188,10 @@ async function submitForm() {
       })
     }
     await fetchList()
-    ElMessage.success('保存成功')
+    ElNotification({ title: '成功', message: '保存成功', type: 'success' })
     dialogVisible.value = false
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElNotification({ title: '错误', message: e.message || '保存失败', type: 'error' })
   } finally {
     saving.value = false
   }
@@ -209,9 +209,9 @@ async function handleDelete(row) {
     })
     await deleteReceiveAddress(id)
     await fetchList()
-    ElMessage.success('删除成功')
+    ElNotification({ title: '成功', message: '删除成功', type: 'success' })
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+    if (e !== 'cancel') ElNotification({ title: '错误', message: e.message || '删除失败', type: 'error' })
   }
 }
 </script>

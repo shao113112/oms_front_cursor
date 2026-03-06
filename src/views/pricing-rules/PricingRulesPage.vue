@@ -109,7 +109,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import {
   searchLogisticsProductPrices,
   getLogisticsProductPriceById,
@@ -142,7 +142,7 @@ async function fetchList() {
     list.value = res.items || []
     total.value = res.total ?? 0
   } catch (e) {
-    ElMessage.error(e.message || '加载失败')
+    ElNotification({ title: '错误', message: e.message || '加载失败', type: 'error' })
   } finally {
     loading.value = false
   }
@@ -227,11 +227,11 @@ function resetForm() {
 async function submitForm() {
   const unitPriceNum = form.unitPrice === '' || form.unitPrice == null ? null : Number(form.unitPrice)
   if (unitPriceNum == null || (typeof unitPriceNum === 'number' && isNaN(unitPriceNum))) {
-    ElMessage.warning('请输入有效单价')
+    ElNotification({ title: '提示', message: '请输入有效单价', type: 'warning' })
     return
   }
   if (!form.productId) {
-    ElMessage.warning('请选择物流产品')
+    ElNotification({ title: '提示', message: '请选择物流产品', type: 'warning' })
     return
   }
   saving.value = true
@@ -252,11 +252,11 @@ async function submitForm() {
     } else {
       await createLogisticsProductPrice(payload)
     }
-    ElMessage.success('保存成功')
+    ElNotification({ title: '成功', message: '保存成功', type: 'success' })
     dialogVisible.value = false
     await fetchList()
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElNotification({ title: '错误', message: e.message || '保存失败', type: 'error' })
   } finally {
     saving.value = false
   }
@@ -274,10 +274,10 @@ async function handleDelete(row) {
       showClose: false,
     })
     await deleteLogisticsProductPrice(id)
-    ElMessage.success('删除成功')
+    ElNotification({ title: '成功', message: '删除成功', type: 'success' })
     await fetchList()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e.message || '删除失败')
+    if (e !== 'cancel') ElNotification({ title: '错误', message: e.message || '删除失败', type: 'error' })
   }
 }
 </script>

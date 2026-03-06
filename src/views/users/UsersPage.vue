@@ -101,7 +101,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElNotification } from 'element-plus'
 import { getCurrentUser } from '@/api/auth'
 import { searchUsers, listUsers, createUser as apiCreateUser } from '@/api/users'
 import { rolesList } from '@/mock/users'
@@ -185,7 +185,7 @@ async function submitCreate() {
   const u = currentUser.value
   const mainId = u?.mainId ?? u?.id
   if (mainId == null) {
-    ElMessage.error('无法获取主账号信息，请重新登录')
+    ElNotification({ title: '错误', message: '无法获取主账号信息，请重新登录', type: 'error' })
     return
   }
   createSubmitting.value = true
@@ -197,13 +197,13 @@ async function submitCreate() {
       company: createForm.value.company ?? u?.company ?? '',
       mainId: Number(mainId),
     })
-    ElMessage.success('添加成功')
+    ElNotification({ title: '成功', message: '添加成功', type: 'success' })
     createDialogVisible.value = false
     resetCreateForm()
     fetchList()
     assignUserOptions.value = await listUsers().catch(() => assignUserOptions.value)
   } catch (e) {
-    ElMessage.error(e?.response?.data?.message ?? e?.message ?? '添加失败')
+    ElNotification({ title: '错误', message: e?.response?.data?.message ?? e?.message ?? '添加失败', type: 'error' })
   } finally {
     createSubmitting.value = false
   }

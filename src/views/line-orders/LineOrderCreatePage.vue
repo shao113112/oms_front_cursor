@@ -399,7 +399,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import { listLogisticsProductPrices } from '@/api/logisticsProductPrices'
 import { listReceiveAddresses } from '@/api/receiveAddresses'
 import { listWarehouses } from '@/api/warehouses'
@@ -581,13 +581,13 @@ function nextStep() {
   if (step.value === 1) {
     const err = getStep1Error()
     if (err) {
-      ElMessage.warning(err)
+      ElNotification({ title: '提示', message: err, type: 'warning' })
       return
     }
   } else if (step.value === 2) {
     const err = getStep2Error()
     if (err) {
-      ElMessage.warning(err)
+      ElNotification({ title: '提示', message: err, type: 'warning' })
       return
     }
   }
@@ -746,11 +746,11 @@ async function saveDraft() {
   try {
     const payload = buildPayload('DRAFT')
     const id = await createLineOrderDraft(payload)
-    ElMessage.success('草稿保存成功')
+    ElNotification({ title: '成功', message: '草稿保存成功', type: 'success' })
     if (id != null) router.push(`/line-orders/${id}`)
     else router.push('/line-orders')
   } catch (e) {
-    ElMessage.error(e?.message || '保存草稿失败')
+    ElNotification({ title: '错误', message: e?.message || '保存草稿失败', type: 'error' })
   } finally {
     saving.value = false
   }
@@ -759,28 +759,28 @@ async function saveDraft() {
 async function finishCreate() {
   const e1 = getStep1Error()
   if (e1) {
-    ElMessage.warning(e1)
+    ElNotification({ title: '提示', message: e1, type: 'warning' })
     return
   }
   const e2 = getStep2Error()
   if (e2) {
-    ElMessage.warning(e2)
+    ElNotification({ title: '提示', message: e2, type: 'warning' })
     return
   }
   const e3 = getStep3Error()
   if (e3) {
-    ElMessage.warning(e3)
+    ElNotification({ title: '提示', message: e3, type: 'warning' })
     return
   }
   saving.value = true
   try {
     const payload = buildPayload('PENDING')
     const id = await createLineOrder(payload)
-    ElMessage.success('保存成功')
+    ElNotification({ title: '成功', message: '保存成功', type: 'success' })
     if (id != null) router.push(`/line-orders/${id}`)
     else router.push('/line-orders')
   } catch (e) {
-    ElMessage.error(e?.message || '保存失败')
+    ElNotification({ title: '错误', message: e?.message || '保存失败', type: 'error' })
   } finally {
     saving.value = false
   }
@@ -907,7 +907,7 @@ async function searchImageLibrary() {
     imageLibraryList.value = res.items ?? []
     imageLibraryTotal.value = res.total ?? 0
   } catch (e) {
-    ElMessage.error(e?.message || '加载图片库失败')
+    ElNotification({ title: '错误', message: e?.message || '加载图片库失败', type: 'error' })
     imageLibraryList.value = []
     imageLibraryTotal.value = 0
   } finally {
@@ -949,7 +949,7 @@ function selectImageFromLibrary(img) {
     item.imageUrl = getImageDisplayUrl(img)
     item.imageId = img.id ?? null
     showImageLibrary.value = false
-    ElMessage.success('已选定图片')
+    ElNotification({ title: '成功', message: '已选定图片', type: 'success' })
   }
 }
 
@@ -968,7 +968,7 @@ async function handleDeleteImage(img) {
     ElNotification({ title: '已删除', type: 'success' })
     await searchImageLibrary()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e?.message || '删除失败')
+    if (e !== 'cancel') ElNotification({ title: '错误', message: e?.message || '删除失败', type: 'error' })
   }
 }
 
@@ -1031,10 +1031,10 @@ onMounted(async () => {
           if (product) form.logisticsProductName = product.productName || product.name || ''
         }
       } else {
-        ElMessage.warning('草稿不存在')
+        ElNotification({ title: '提示', message: '草稿不存在', type: 'warning' })
       }
     } catch (e) {
-      ElMessage.error(e?.message || '加载草稿失败')
+      ElNotification({ title: '错误', message: e?.message || '加载草稿失败', type: 'error' })
     }
     return
   }

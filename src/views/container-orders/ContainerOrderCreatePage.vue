@@ -130,7 +130,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElNotification } from 'element-plus'
 import { createContainerOrder, getNewContainerOrderNo } from '@/api/containerOrders'
 import { listPickupAddresses } from '@/api/pickupAddresses'
 import { listReceiveAddresses } from '@/api/receiveAddresses'
@@ -219,10 +219,10 @@ async function loadAddresses() {
 
 async function submit() {
   if (!canSubmit.value) {
-    if (!form.pickupAddressId) ElMessage.warning('请选择提货地址')
-    else if (!form.shippingAddressId) ElMessage.warning('请选择收件地址')
-    else if (!form.agreed) ElMessage.warning('请阅读并同意《服务协议》')
-    else if (!form.declarationItems.some((i) => i.productName != null && String(i.productName).trim() !== '')) ElMessage.warning('请至少添加一条申报商品并填写商品名称')
+    if (!form.pickupAddressId) ElNotification({ title: '提示', message: '请选择提货地址', type: 'warning' })
+    else if (!form.shippingAddressId) ElNotification({ title: '提示', message: '请选择收件地址', type: 'warning' })
+    else if (!form.agreed) ElNotification({ title: '提示', message: '请阅读并同意《服务协议》', type: 'warning' })
+    else if (!form.declarationItems.some((i) => i.productName != null && String(i.productName).trim() !== '')) ElNotification({ title: '提示', message: '请至少添加一条申报商品并填写商品名称', type: 'warning' })
     return
   }
   const boxQty = Number(form.boxCount) || 1
@@ -240,7 +240,7 @@ async function submit() {
       purpose: i.purpose?.trim(),
     }))
   if (goods.length === 0) {
-    ElMessage.warning('请至少添加一条申报商品')
+    ElNotification({ title: '提示', message: '请至少添加一条申报商品', type: 'warning' })
     return
   }
   submitLoading.value = true
@@ -254,10 +254,10 @@ async function submit() {
       },
       goods,
     })
-    ElMessage.success('创建成功')
+    ElNotification({ title: '成功', message: '创建成功', type: 'success' })
     router.push(`/container-orders/${id}`)
   } catch (e) {
-    ElMessage.error(e?.message || '创建失败')
+    ElNotification({ title: '错误', message: e?.message || '创建失败', type: 'error' })
   } finally {
     submitLoading.value = false
   }

@@ -242,7 +242,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import { searchLineOrders, printBoxLabels, exportWmsInbound, deleteLineOrderDraft, copyLineOrder } from '@/api/lineOrders'
 import { listLogisticsProducts } from '@/api/logisticsProducts'
 
@@ -356,7 +356,7 @@ async function fetchList() {
     list.value = res.items ?? []
     total.value = res.total ?? 0
   } catch (e) {
-    ElMessage.error(e?.message || '加载失败')
+    ElNotification({ title: '错误', message: e?.message || '加载失败', type: 'error' })
     list.value = []
     total.value = 0
   } finally {
@@ -371,24 +371,24 @@ function onSelectionChange(rows) {
 async function handleCopyOrder() {
   const rows = selectedRows.value
   if (rows.length !== 1) {
-    ElMessage.warning('请勾选一条订单后再复制')
+    ElNotification({ title: '提示', message: '请勾选一条订单后再复制', type: 'warning' })
     return
   }
   const id = rows[0].id
   if (id == null) {
-    ElMessage.warning('所选订单无效')
+    ElNotification({ title: '提示', message: '所选订单无效', type: 'warning' })
     return
   }
   copyLoading.value = true
   try {
     const newId = await copyLineOrder(id)
-    ElMessage.success('复制成功')
+    ElNotification({ title: '成功', message: '复制成功', type: 'success' })
     await fetchList()
     if (newId != null) {
       router.push(`/line-orders/${newId}`)
     }
   } catch (e) {
-    ElMessage.error(e?.message || '复制失败')
+    ElNotification({ title: '错误', message: e?.message || '复制失败', type: 'error' })
   } finally {
     copyLoading.value = false
   }
@@ -404,22 +404,22 @@ async function handleDeleteDraft(row) {
       showClose: false,
     })
     await deleteLineOrderDraft(row.id)
-    ElMessage.success('已删除')
+    ElNotification({ title: '成功', message: '已删除', type: 'success' })
     await fetchList()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error(e?.message || '删除失败')
+    if (e !== 'cancel') ElNotification({ title: '错误', message: e?.message || '删除失败', type: 'error' })
   }
 }
 
 async function handlePrintBoxLabels() {
   const rows = selectedRows.value
   if (!rows.length) {
-    ElMessage.warning('请先勾选要打印箱唛的订单')
+    ElNotification({ title: '提示', message: '请先勾选要打印箱唛的订单', type: 'warning' })
     return
   }
   const ids = rows.map((r) => r.id).filter((id) => id != null)
   if (!ids.length) {
-    ElMessage.warning('所选订单无有效ID')
+    ElNotification({ title: '提示', message: '所选订单无有效ID', type: 'warning' })
     return
   }
   printBoxLabelLoading.value = true
@@ -433,7 +433,7 @@ async function handlePrintBoxLabels() {
         setTimeout(() => URL.revokeObjectURL(url), 60000)
       }, 2000)
     } else {
-      ElMessage.warning('请允许弹窗以打开打印预览')
+      ElNotification({ title: '提示', message: '请允许弹窗以打开打印预览', type: 'warning' })
       URL.revokeObjectURL(url)
     }
   } catch (e) {
@@ -447,7 +447,7 @@ async function handlePrintBoxLabels() {
         msg = '所选订单没有可打印的箱信息或请求失败'
       }
     }
-    ElMessage.error(msg)
+    ElNotification({ title: '错误', message: msg, type: 'error' })
   } finally {
     printBoxLabelLoading.value = false
   }
@@ -462,13 +462,13 @@ function openExportWmsDialog() {
 async function confirmExportWms() {
   const date = exportWmsExpectedDate.value
   if (!date || !date.trim()) {
-    ElMessage.warning('请选择预计到仓日期')
+    ElNotification({ title: '提示', message: '请选择预计到仓日期', type: 'warning' })
     return
   }
   const rows = selectedRows.value
   const ids = rows.map((r) => r.id).filter((id) => id != null)
   if (!ids.length) {
-    ElMessage.warning('所选订单无有效ID')
+    ElNotification({ title: '提示', message: '所选订单无有效ID', type: 'warning' })
     return
   }
   exportWmsLoading.value = true
@@ -481,7 +481,7 @@ async function confirmExportWms() {
     a.click()
     URL.revokeObjectURL(url)
     showExportWmsDialog.value = false
-    ElMessage.success('导出成功')
+    ElNotification({ title: '成功', message: '导出成功', type: 'success' })
   } catch (e) {
     let msg = e?.message || '导出失败'
     if (e?.response?.data instanceof Blob) {
@@ -493,7 +493,7 @@ async function confirmExportWms() {
         msg = '导出WMS入库单失败'
       }
     }
-    ElMessage.error(msg)
+    ElNotification({ title: '错误', message: msg, type: 'error' })
   } finally {
     exportWmsLoading.value = false
   }

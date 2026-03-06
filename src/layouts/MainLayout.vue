@@ -149,7 +149,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElNotification } from 'element-plus'
 import { getCurrentUser, logout as apiLogout } from '@/api/auth'
 import { updatePwd as apiUpdatePwd } from '@/api/users'
 import { useLocaleTheme } from '@/composables/useLocaleTheme'
@@ -213,17 +213,17 @@ async function submitUpdatePwd() {
   const { pwd, newPwd } = pwdForm.value
   const id = currentUser.value?.id
   if (!id) {
-    ElMessage.error('无法获取当前用户，请重新登录')
+    ElNotification({ title: '错误', message: '无法获取当前用户，请重新登录', type: 'error' })
     return
   }
   pwdSubmitting.value = true
   try {
     await apiUpdatePwd({ id, pwd, newPwd })
-    ElMessage.success('密码修改成功')
+    ElNotification({ title: '成功', message: '密码修改成功', type: 'success' })
     pwdDialogVisible.value = false
     resetPwdForm()
   } catch (e) {
-    ElMessage.error(e?.response?.data?.message ?? e?.message ?? '修改失败')
+    ElNotification({ title: '错误', message: e?.response?.data?.message ?? e?.message ?? '修改失败', type: 'error' })
   } finally {
     pwdSubmitting.value = false
   }

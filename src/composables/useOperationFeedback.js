@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 
 // 操作状态管理
 export function useOperationFeedback() {
@@ -17,22 +17,22 @@ export function useOperationFeedback() {
 
   // 显示成功消息
   const showSuccess = (message) => {
-    ElMessage.success(message)
+    ElNotification({ title: '成功', message, type: 'success' })
   }
 
   // 显示错误消息
   const showError = (message) => {
-    ElMessage.error(message)
+    ElNotification({ title: '错误', message, type: 'error' })
   }
 
   // 显示警告消息
   const showWarning = (message) => {
-    ElMessage.warning(message)
+    ElNotification({ title: '提示', message, type: 'warning' })
   }
 
   // 显示信息消息
   const showInfo = (message) => {
-    ElMessage.info(message)
+    ElNotification({ title: '提示', message, type: 'info' })
   }
 
   // 删除/确认对话框：挂载到 body 并居中，样式与页面统一

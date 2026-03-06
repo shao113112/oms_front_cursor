@@ -241,7 +241,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import { getLineOrderDetail as fetchLineOrderDetail, addLineOrderFee, updateLineOrderFee, deleteLineOrderFee, confirmLineOrderFee, updateLineOrderBoxBilling } from '@/api/lineOrders'
 
 const orderStatusText = { DRAFT: '草稿', PENDING: '待处理', TRANSPORTING: '运输中', DELIVERED: '已送达', CANCELLED: '已取消' }
@@ -345,7 +345,7 @@ async function refetchDetail() {
     const data = await fetchLineOrderDetail(id)
     order.value = normalizeDetail(data)
   } catch (e) {
-    ElMessage.error(e?.message || '刷新失败')
+    ElNotification({ title: '错误', message: e?.message || '刷新失败', type: 'error' })
   }
 }
 
@@ -361,7 +361,7 @@ function resetFeeForm() {
 
 async function submitAddFee() {
   if (!feeForm.value.feeName?.trim()) {
-    ElMessage.warning('请填写费用项')
+    ElNotification({ title: '提示', message: '请填写费用项', type: 'warning' })
     return
   }
   const id = order.value?.id
@@ -379,11 +379,11 @@ async function submitAddFee() {
       amount: unitPrice * quantity,
       currency: feeForm.value.currency || 'USD',
     })
-    ElMessage.success('添加成功')
+    ElNotification({ title: '成功', message: '添加成功', type: 'success' })
     showAddFeeDialog.value = false
     await refetchDetail()
   } catch (e) {
-    ElMessage.error(e?.message || '添加失败')
+    ElNotification({ title: '错误', message: e?.message || '添加失败', type: 'error' })
   } finally {
     addFeeLoading.value = false
   }
@@ -407,7 +407,7 @@ async function submitEditFee() {
   const id = order.value?.id
   if (!fee?.id || id == null) return
   if (!feeForm.value.feeName?.trim()) {
-    ElMessage.warning('请填写费用项')
+    ElNotification({ title: '提示', message: '请填写费用项', type: 'warning' })
     return
   }
   editFeeLoading.value = true
@@ -424,12 +424,12 @@ async function submitEditFee() {
       amount: unitPrice * quantity,
       currency: feeForm.value.currency || 'USD',
     })
-    ElMessage.success('修改成功')
+    ElNotification({ title: '成功', message: '修改成功', type: 'success' })
     showEditFeeDialog.value = false
     editingFee.value = null
     await refetchDetail()
   } catch (e) {
-    ElMessage.error(e?.message || '修改失败')
+    ElNotification({ title: '错误', message: e?.message || '修改失败', type: 'error' })
   } finally {
     editFeeLoading.value = false
   }
@@ -450,10 +450,10 @@ async function handleDeleteFee(fee) {
   }
   try {
     await deleteLineOrderFee(fee.id)
-    ElMessage.success('已删除')
+    ElNotification({ title: '成功', message: '已删除', type: 'success' })
     await refetchDetail()
   } catch (e) {
-    ElMessage.error(e?.message || '删除失败')
+    ElNotification({ title: '错误', message: e?.message || '删除失败', type: 'error' })
   }
 }
 
@@ -476,12 +476,12 @@ async function submitBoxBilling() {
       billingWeight: boxBillingForm.value.billingWeight,
       billingVolume: boxBillingForm.value.billingVolume,
     })
-    ElMessage.success('保存成功')
+    ElNotification({ title: '成功', message: '保存成功', type: 'success' })
     showBoxBillingDialog.value = false
     editingBox.value = null
     await refetchDetail()
   } catch (e) {
-    ElMessage.error(e?.message || '保存失败')
+    ElNotification({ title: '错误', message: e?.message || '保存失败', type: 'error' })
   } finally {
     boxBillingLoading.value = false
   }
@@ -504,10 +504,10 @@ async function handleConfirmFee() {
   confirmFeeLoading.value = true
   try {
     await confirmLineOrderFee(id)
-    ElMessage.success('已确认')
+    ElNotification({ title: '成功', message: '已确认', type: 'success' })
     await refetchDetail()
   } catch (e) {
-    ElMessage.error(e?.message || '确认失败')
+    ElNotification({ title: '错误', message: e?.message || '确认失败', type: 'error' })
   } finally {
     confirmFeeLoading.value = false
   }
@@ -524,7 +524,7 @@ onMounted(async () => {
     const data = await fetchLineOrderDetail(id)
     order.value = normalizeDetail(data)
   } catch (e) {
-    ElMessage.error(e?.message || '加载失败')
+    ElNotification({ title: '错误', message: e?.message || '加载失败', type: 'error' })
     order.value = null
   } finally {
     loading.value = false
