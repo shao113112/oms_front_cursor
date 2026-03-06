@@ -13,8 +13,14 @@ export function uploadFile(file) {
       timeout: 30000,
     })
     .then((res) => {
-      const data = res.data?.data ?? res.data
-      return typeof data === 'object' ? data : { url: data }
+      let data = res.data?.data ?? res.data
+      if (data == null) return {}
+      if (Array.isArray(data)) data = data[0] ?? {}
+      if (typeof data === 'string') return { url: data }
+      if (typeof data !== 'object') return {}
+      const url = data.url ?? data.fileUrl ?? data.imageUrl ?? data.path ?? data.filePath
+      const id = data.id ?? data.fileId
+      return { ...data, url: url ?? data.url, id: id ?? data.id }
     })
 }
 

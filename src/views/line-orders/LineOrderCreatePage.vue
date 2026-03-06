@@ -273,21 +273,19 @@
                 <label class="text-sm font-medium text-slate-700">商品图片 <span class="text-red-500">*</span></label>
                 <el-button size="small" @click="openImageLibrary(bi, ii)">图片库</el-button>
               </div>
-              <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-3 flex-nowrap">
                 <el-upload
                   :show-file-list="false"
-                  :http-request="(opt) => handleUploadImage(opt, box, item)"
+                  :http-request="(opt) => handleUploadImage(opt, bi, ii)"
                   accept=".jpg,.jpeg,.png,.webp"
                 >
                   <el-button size="small">选择文件</el-button>
                 </el-upload>
-                <template v-if="item.imageUrl">
-                  <div class="relative inline-block">
-                    <img :src="item.imageUrl" alt="商品图" class="w-20 h-20 object-cover rounded-lg border border-slate-200" />
-                    <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-slate-700 text-white text-xs flex items-center justify-center cursor-pointer hover:bg-red-500" @click="item.imageUrl = ''; item.imageId = null" title="移除">×</span>
-                  </div>
-                </template>
-                <span v-else class="text-sm text-slate-500">未选择任何文件</span>
+                <div v-if="item.imageUrl" class="relative inline-block shrink-0">
+                  <img :src="item.imageUrl" alt="商品图" class="w-20 h-20 object-cover rounded-lg border border-slate-200" />
+                  <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-slate-700 text-white text-xs flex items-center justify-center cursor-pointer hover:bg-red-500" @click="item.imageUrl = ''; item.imageId = null" title="移除">×</span>
+                </div>
+                <span v-else class="text-sm text-slate-500 shrink-0">未选择任何文件</span>
               </div>
               <p class="text-xs text-slate-500 mt-1.5">支持格式:JPG、PNG、WEBP | 尺寸要求:最小480×480像素,最大1024×1024像素 | 文件大小不超过1MB</p>
             </div>
@@ -401,7 +399,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { listLogisticsProductPrices } from '@/api/logisticsProductPrices'
 import { listReceiveAddresses } from '@/api/receiveAddresses'
 import { listWarehouses } from '@/api/warehouses'
@@ -967,39 +965,42 @@ async function handleDeleteImage(img) {
       showClose: false,
     })
     await deleteFileById(id)
-    ElMessage.success('已删除')
+    ElNotification({ title: '已删除', type: 'success' })
     await searchImageLibrary()
   } catch (e) {
     if (e !== 'cancel') ElMessage.error(e?.message || '删除失败')
   }
 }
 
-async function handleUploadImage(opt, box, item) {
+async function handleUploadImage(opt, boxIndex, itemIndex) {
   const file = opt.file
   if (!file) return
   const accept = ['.jpg', '.jpeg', '.png', '.webp']
   const ext = file.name ? file.name.slice(file.name.lastIndexOf('.')).toLowerCase() : ''
   if (!accept.includes(ext)) {
-    ElMessage.warning('请选择 JPG、PNG 或 WEBP 格式')
+    ElNotification({ title: '提示', message: '请选择 JPG、PNG 或 WEBP 格式', type: 'warning' })
     return
   }
   if (file.size > 1024 * 1024) {
-    ElMessage.warning('文件大小不超过 1MB')
+    ElNotification({ title: '提示', message: '文件大小不超过 1MB', type: 'warning' })
     return
   }
+  const box = form.boxes[boxIndex]
+  const item = box?.items?.[itemIndex]
+  if (!item) return
   uploadImageLoading.value = true
   try {
     const res = await uploadFile(file)
-    const url = res.url ?? res.data?.url ?? res.imageUrl
+    const url = res.url ?? res.fileUrl ?? res.imageUrl ?? res.path ?? res.data?.url ?? res.data?.fileUrl ?? (typeof res.data === 'string' ? res.data : '')
     if (url) {
       item.imageUrl = url
       item.imageId = res.id ?? res.data?.id ?? null
-      ElMessage.success('上传成功')
+      ElNotification({ title: '上传成功', message: '图片已存入图片库', type: 'success' })
     } else {
-      ElMessage.error('上传失败，未返回图片地址')
+      ElNotification({ title: '上传失败', message: '未返回图片地址', type: 'error' })
     }
   } catch (e) {
-    ElMessage.error(e?.message || '上传失败')
+    ElNotification({ title: '上传失败', message: e?.message || '网络错误', type: 'error' })
   } finally {
     uploadImageLoading.value = false
   }

@@ -265,6 +265,61 @@ body {
   color: var(--el-text-color-primary);
 }
 
+/* ElMessage 提示（成功/失败等）统一屏幕居中 */
+.el-message {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+}
+
+/* ElNotification 统一居中、与 MessageBox 一致的卡片风格 */
+.el-notification {
+  position: fixed !important;
+  right: auto !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+  min-width: 320px !important;
+  max-width: 420px !important;
+  padding: 20px 44px 20px 24px !important;
+  background: #fff !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.08), 0 4px 16px -4px rgb(0 0 0 / 0.06), 0 25px 50px -12px rgb(0 0 0 / 0.15) !important;
+}
+.el-notification .el-notification__title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  margin-bottom: 6px !important;
+}
+.el-notification .el-notification__content {
+  font-size: 14px !important;
+  color: #475569 !important;
+  line-height: 1.5 !important;
+}
+.el-notification .el-notification__closeBtn {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  color: #94a3b8 !important;
+  font-size: 16px !important;
+}
+.el-notification .el-notification__closeBtn:hover {
+  color: #64748b !important;
+}
+.el-notification.el-notification--success .el-notification__icon { color: var(--el-color-success) !important; }
+.el-notification.el-notification--error .el-notification__icon { color: var(--el-color-danger) !important; }
+.el-notification.el-notification--warning .el-notification__icon { color: var(--el-color-warning) !important; }
+
 .el-input__wrapper {
   border-radius: 10px;
 }
